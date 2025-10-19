@@ -46,6 +46,7 @@ public class FilmController {
         filmToBeAdded.setName(name);
         filmToBeAdded.setDescription(description);
         filmToBeAdded.setReleaseDate(releaseDate);
+        films.put(id, filmToBeAdded);
 
         return films.get(id);
     }
@@ -74,6 +75,7 @@ public class FilmController {
         filmToBeAdded.setName(name);
         filmToBeAdded.setDescription(description);
         filmToBeAdded.setReleaseDate(releaseDate);
+        films.put(id, filmToBeAdded);
 
         return films.get(id);
     }

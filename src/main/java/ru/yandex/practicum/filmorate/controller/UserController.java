@@ -55,7 +55,8 @@ public class UserController {
         userToBeAdded.setEmail(email);
         userToBeAdded.setBirthday(birthdayDate);
         users.put(id, userToBeAdded);
-        return users.get(user.getId());
+
+        return users.get(id);
     }
 
     @PutMapping
@@ -91,6 +92,7 @@ public class UserController {
         userToBeAdded.setEmail(email);
         userToBeAdded.setBirthday(birthdayDate);
         users.put(id, userToBeAdded);
+
         return users.get(id);
     }
 
