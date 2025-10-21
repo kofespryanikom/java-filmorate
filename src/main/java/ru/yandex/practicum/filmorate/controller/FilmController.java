@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
@@ -31,12 +33,16 @@ public class FilmController {
         Film filmToBeAdded = new Film();
 
         if (name == null || name.isBlank()) {
+            log.error("Имя фильма должно быть задано");
             throw new ValidationException("Имя фильма должно быть задано");
         } else if (description.length() > 200) {
+            log.error("Длина описания не должна превышать 200 символов");
             throw new ValidationException("Длина описания не должна превышать 200 символов");
         } else if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
+            log.error("Дата релиза не должна быть раньше 28 декабря 1895 года");
             throw new ValidationException("Дата релиза не должна быть раньше 28 декабря 1895 года");
-        } else if (duration.toMinutes() < 0) {
+        } else if (duration.toMinutes() <= 0) {
+            log.error("Продолжительность фильма не может быть отрицательной");
             throw new ValidationException("Продолжительность фильма не может быть отрицательной");
         }
 
@@ -47,6 +53,8 @@ public class FilmController {
         filmToBeAdded.setDescription(description);
         filmToBeAdded.setReleaseDate(releaseDate);
         films.put(id, filmToBeAdded);
+
+        log.info("Добавлен фильм: {}", name);
 
         return films.get(id);
     }
@@ -61,13 +69,20 @@ public class FilmController {
         Film filmToBeAdded = new Film();
 
         if (name == null || name.isBlank()) {
+            log.error("Имя фильма должно быть задано");
             throw new ValidationException("Имя фильма должно быть задано");
         } else if (description.length() > 200) {
+            log.error("Длина описания не должна превышать 200 символов");
             throw new ValidationException("Длина описания не должна превышать 200 символов");
         } else if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
+            log.error("Дата релиза не должна быть раньше 28 декабря 1895 года");
             throw new ValidationException("Дата релиза не должна быть раньше 28 декабря 1895 года");
-        } else if (duration.toMinutes() < 0) {
-            throw new ValidationException("Продолжительность фильма не может быть отрицательной");
+        } else if (duration.toMinutes() <= 0) {
+            log.error("Продолжительность фильма не может быть неположительной");
+            throw new ValidationException("Продолжительность фильма не может быть неположительной");
+        } else if (!films.containsKey(id)) {
+            log.error("Такого фильма не существует");
+            throw new ValidationException("Такого фильма не существует");
         }
 
         filmToBeAdded.setId(id);
@@ -76,6 +91,8 @@ public class FilmController {
         filmToBeAdded.setDescription(description);
         filmToBeAdded.setReleaseDate(releaseDate);
         films.put(id, filmToBeAdded);
+
+        log.info("Обновлен фильм: {}", name);
 
         return films.get(id);
     }
