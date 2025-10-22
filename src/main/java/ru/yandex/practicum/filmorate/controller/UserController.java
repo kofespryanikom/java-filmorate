@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -16,8 +17,8 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
 
-    private int id = 0;
-    private Map<Integer, User> users = new HashMap<>();
+    private Long id = 0L;
+    private Map<Long, User> users = new HashMap<>();
 
     @GetMapping
     public List<User> returnUsersList() {
@@ -25,33 +26,17 @@ public class UserController {
     }
 
     @PostMapping
-    public User addUser(@RequestBody User user) {
+    public User addUser(@Valid @RequestBody User user) {
         String email = user.getEmail();
         String login = user.getLogin();
         String name = user.getName();
         LocalDate birthdayDate = user.getBirthday();
         User userToBeAdded = new User();
 
-        if (email == null || email.isBlank()) {
-            log.error("Имейл должен быть указан");
-            throw new ValidationException("Имейл должен быть указан");
-        } else if (!email.contains("@")) {
-            log.error("Имейл должен содержать \"@\"");
-            throw new ValidationException("Имейл должен содержать \"@\"");
-        } else if (login == null) {
-            log.error("Логин должен быть задан");
-            throw new ValidationException("Логин должен быть задан");
-        } else if (login.isEmpty()) {
-            log.error("Логин должен содержать символы");
-            throw new ValidationException("Логин должен содержать символы");
-        } else if (login.contains(" ")) {
-            log.error("Логин не должен содержать пробелов");
-            throw new ValidationException("Логин не должен содержать пробелов");
-        } else if (birthdayDate.isAfter(LocalDate.now())) {
+        if (birthdayDate.isAfter(LocalDate.now())) {
             log.error("Дата дня рождения должна быть раньше даты сегодня");
             throw new ValidationException("Дата дня рождения должна быть раньше даты сегодня");
         }
-
         id = getNextId();
         if (name == null || name.isBlank()) {
             userToBeAdded.setName(login);
@@ -70,37 +55,21 @@ public class UserController {
     }
 
     @PutMapping
-    public User renewUser(@RequestBody User user) {
-        int id = user.getId();
+    public User renewUser(@Valid @RequestBody User user) {
+        Long id = user.getId();
         String email = user.getEmail();
         String login = user.getLogin();
         String name = user.getName();
         LocalDate birthdayDate = user.getBirthday();
         User userToBeAdded = new User();
 
-        if (email == null) {
-            log.error("Имейл должен быть указан");
-            throw new ValidationException("Имейл должен быть указан");
-        } else if (!email.contains("@")) {
-            log.error("Имейл должен содержать \"@\"");
-            throw new ValidationException("Имейл должен содержать \"@\"");
-        } else if (login == null) {
-            log.error("Логин должен быть задан");
-            throw new ValidationException("Логин должен быть задан");
-        } else if (login.isEmpty()) {
-            log.error("Логин должен содержать символы");
-            throw new ValidationException("Логин должен содержать символы");
-        } else if (login.contains(" ")) {
-            log.error("Логин не должен содержать пробелов");
-            throw new ValidationException("Логин не должен содержать пробелов");
-        } else if (birthdayDate.isAfter(LocalDate.now())) {
+        if (birthdayDate.isAfter(LocalDate.now())) {
             log.error("Дата дня рождения должна быть раньше даты сегодня");
             throw new ValidationException("Дата дня рождения должна быть раньше даты сегодня");
         } else if (!users.containsKey(id)) {
             log.error("Такого пользователя не существует");
             throw new ValidationException("Такого пользователя не существует");
         }
-
         if (name == null || name.isBlank()) {
             userToBeAdded.setName(login);
         } else {
@@ -117,7 +86,7 @@ public class UserController {
         return users.get(id);
     }
 
-    public int getNextId() {
+    public Long getNextId() {
         return ++id;
     }
 }

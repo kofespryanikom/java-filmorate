@@ -33,50 +33,6 @@ public class UserControllerValidationTests {
     }
 
     @Test
-    void addingUserWithBlankEmailShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0");
-        user.setName("0");
-        user.setEmail(" ");
-        user.setBirthday(LocalDate.of(2018, 1, 1));
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.addUser(user));
-    }
-
-    @Test
-    void addingUserWithEmailWithNoAtSymbolShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0");
-        user.setName("0");
-        user.setEmail("mailmail.ru");
-        user.setBirthday(LocalDate.of(2018, 1, 1));
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.addUser(user));
-    }
-
-    @Test
-    void addingUserWithEmptyLoginShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("");
-        user.setName("0");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.of(2018, 1, 1));
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.addUser(user));
-    }
-
-    @Test
-    void addingUserWithLoginWithSpacesShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0 0");
-        user.setName("0");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.of(2018, 1, 1));
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.addUser(user));
-    }
-
-    @Test
     void addingUserWithEmptyNameShouldReturnUserWithNameSimilarToLogin() {
         User user = new User();
         user.setLogin("0");
@@ -121,66 +77,6 @@ public class UserControllerValidationTests {
         Assertions.assertEquals("0.1", userRenewed.getName());
         Assertions.assertEquals("mail2@mail.ru", userRenewed.getEmail());
         Assertions.assertEquals("2019-01-01", userRenewed.getBirthday().toString());
-    }
-
-    @Test
-    void renewingUserWithBlankEmailShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0");
-        user.setName("0");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.of(2018, 1, 1));
-
-        User userAfterAdding = userController.addUser(user);
-
-        userAfterAdding.setEmail(" ");
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.renewUser(userAfterAdding));
-    }
-
-    @Test
-    void renewingUserWithEmailWithNoAtSymbolShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0");
-        user.setName("0");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.of(2018, 1, 1));
-
-        User userAfterAdding = userController.addUser(user);
-
-        userAfterAdding.setEmail("mailmail.ru");
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.renewUser(userAfterAdding));
-    }
-
-    @Test
-    void renewingUserWithEmptyLoginShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0");
-        user.setName("0");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.of(2018, 1, 1));
-
-        User userAfterAdding = userController.addUser(user);
-
-        userAfterAdding.setLogin("");
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.renewUser(userAfterAdding));
-    }
-
-    @Test
-    void renewingUserWithLoginWithSpacesShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0");
-        user.setName("0");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.of(2018, 1, 1));
-
-        User userAfterAdding = userController.addUser(user);
-
-        userAfterAdding.setLogin("0 0");
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.renewUser(userAfterAdding));
     }
 
     @Test

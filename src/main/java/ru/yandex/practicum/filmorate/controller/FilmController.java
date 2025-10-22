@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -16,8 +17,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private int id = 0;
-    private Map<Integer, Film> films = new HashMap<>();
+    private Long id = 0L;
+    private Map<Long, Film> films = new HashMap<>();
 
     @GetMapping
     public List<Film> returnFilmsList() {
@@ -25,20 +26,14 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         String name = film.getName();
         String description = film.getDescription();
         LocalDate releaseDate = film.getReleaseDate();
         Duration duration = film.getDuration();
         Film filmToBeAdded = new Film();
 
-        if (name == null || name.isBlank()) {
-            log.error("Имя фильма должно быть задано");
-            throw new ValidationException("Имя фильма должно быть задано");
-        } else if (description.length() > 200) {
-            log.error("Длина описания не должна превышать 200 символов");
-            throw new ValidationException("Длина описания не должна превышать 200 символов");
-        } else if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
+        if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
             log.error("Дата релиза не должна быть раньше 28 декабря 1895 года");
             throw new ValidationException("Дата релиза не должна быть раньше 28 декабря 1895 года");
         } else if (duration.toMinutes() <= 0) {
@@ -60,21 +55,15 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film renewFilm(@RequestBody Film film) {
-        int id = film.getId();
+    public Film renewFilm(@Valid @RequestBody Film film) {
+        Long id = film.getId();
         String name = film.getName();
         String description = film.getDescription();
         LocalDate releaseDate = film.getReleaseDate();
         Duration duration = film.getDuration();
         Film filmToBeAdded = new Film();
 
-        if (name == null || name.isBlank()) {
-            log.error("Имя фильма должно быть задано");
-            throw new ValidationException("Имя фильма должно быть задано");
-        } else if (description.length() > 200) {
-            log.error("Длина описания не должна превышать 200 символов");
-            throw new ValidationException("Длина описания не должна превышать 200 символов");
-        } else if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
+        if (releaseDate.isBefore(LocalDate.of(1895, 12, 28))) {
             log.error("Дата релиза не должна быть раньше 28 декабря 1895 года");
             throw new ValidationException("Дата релиза не должна быть раньше 28 декабря 1895 года");
         } else if (duration.toMinutes() <= 0) {
@@ -97,7 +86,7 @@ public class FilmController {
         return films.get(id);
     }
 
-    public int getNextId() {
+    public Long getNextId() {
         return ++id;
     }
 }

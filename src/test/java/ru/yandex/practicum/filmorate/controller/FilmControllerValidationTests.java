@@ -34,33 +34,6 @@ public class FilmControllerValidationTests {
     }
 
     @Test
-    void addingFilmWithBlankNameShouldThrowValidationException() {
-        Film film = new Film();
-        film.setName("");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(2018, 7, 1));
-        film.setDuration(Duration.ofMinutes(90));
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.addFilm(film));
-    }
-
-    @Test
-    void addingFilmWithDescriptionLengthGreaterThan200ShouldThrowValidationException() {
-        String description = "";
-        for (int i = 0; i < 201; i++) {
-            description += "0";
-        }
-
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription(description);
-        film.setReleaseDate(LocalDate.of(2018, 7, 1));
-        film.setDuration(Duration.ofMinutes(90));
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.addFilm(film));
-    }
-
-    @Test
     void addingFilmWithDescriptionLength200ShouldntThrowValidationException() {
         String description = "";
         for (int i = 0; i < 200; i++) {
@@ -145,41 +118,6 @@ public class FilmControllerValidationTests {
         Assertions.assertEquals("0.1", filmReturned.getDescription());
         Assertions.assertEquals("1896-12-28", filmReturned.getReleaseDate().toString());
         Assertions.assertEquals(95, filmReturned.getDuration().toMinutes());
-    }
-
-    @Test
-    void renewingFilmWithBlankNameShouldThrowValidationException() {
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(2018, 7, 1));
-        film.setDuration(Duration.ofMinutes(90));
-
-        Film filmAfterAdding = filmController.addFilm(film);
-
-        filmAfterAdding.setName("");
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.renewFilm(filmAfterAdding));
-    }
-
-    @Test
-    void renewingFilmWithDescriptionLengthGreaterThan200ShouldThrowValidationException() {
-        String incorrectDescription = "";
-        for (int i = 0; i < 201; i++) {
-            incorrectDescription += "0";
-        }
-
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(2018, 7, 1));
-        film.setDuration(Duration.ofMinutes(90));
-
-        Film filmAfterAdding = filmController.addFilm(film);
-
-        filmAfterAdding.setDescription(incorrectDescription);
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.renewFilm(filmAfterAdding));
     }
 
     @Test
