@@ -33,10 +33,6 @@ public class UserController {
         LocalDate birthdayDate = user.getBirthday();
         User userToBeAdded = new User();
 
-        if (birthdayDate.isAfter(LocalDate.now())) {
-            log.error("Дата дня рождения должна быть раньше даты сегодня");
-            throw new ValidationException("Дата дня рождения должна быть раньше даты сегодня");
-        }
         id = getNextId();
         if (name == null || name.isBlank()) {
             userToBeAdded.setName(login);
@@ -63,10 +59,7 @@ public class UserController {
         LocalDate birthdayDate = user.getBirthday();
         User userToBeAdded = new User();
 
-        if (birthdayDate.isAfter(LocalDate.now())) {
-            log.error("Дата дня рождения должна быть раньше даты сегодня");
-            throw new ValidationException("Дата дня рождения должна быть раньше даты сегодня");
-        } else if (!users.containsKey(id)) {
+        if (!users.containsKey(id)) {
             log.error("Такого пользователя не существует");
             throw new ValidationException("Такого пользователя не существует");
         }

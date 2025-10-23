@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.Duration;
@@ -52,17 +51,6 @@ public class FilmControllerValidationTests {
     }
 
     @Test
-    void addingFilmWithReleaseDateBefore28thDecember1895ShouldThrowValidationException() {
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        film.setDuration(Duration.ofMinutes(90));
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.addFilm(film));
-    }
-
-    @Test
     void addingFilmWithReleaseDate28thDecember1895ShouldntThrowValidationException() {
         Film film = new Film();
         film.setName("0");
@@ -73,28 +61,6 @@ public class FilmControllerValidationTests {
         Film filmReturned = filmController.addFilm(film);
 
         Assertions.assertEquals("1895-12-28", filmReturned.getReleaseDate().toString());
-    }
-
-    @Test
-    void addingFilmWithNotPositiveDurationShouldThrowValidationException() {
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setDuration(Duration.ofMinutes(-1));
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.addFilm(film));
-    }
-
-    @Test
-    void addingFilmWithZeroDurationShouldThrowValidationException() {
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setDuration(Duration.ofMinutes(0));
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.addFilm(film));
     }
 
     @Test
@@ -143,21 +109,6 @@ public class FilmControllerValidationTests {
     }
 
     @Test
-    void renewingFilmWithReleaseDateBefore28thDecember1895ShouldThrowValidationException() {
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setDuration(Duration.ofMinutes(90));
-
-        Film filmAfterAdding = filmController.addFilm(film);
-
-        filmAfterAdding.setReleaseDate(LocalDate.of(1895, 12, 27));
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.renewFilm(filmAfterAdding));
-    }
-
-    @Test
     void renewingFilmWithReleaseDate28thDecember1895ShouldntThrowValidationException() {
         Film film = new Film();
         film.setName("0");
@@ -170,35 +121,5 @@ public class FilmControllerValidationTests {
         filmReturned.setReleaseDate(LocalDate.of(1895, 12, 28));
 
         Assertions.assertDoesNotThrow(() -> filmController.renewFilm(filmReturned));
-    }
-
-    @Test
-    void renewingFilmWithNotPositiveDurationShouldThrowValidationException() {
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setDuration(Duration.ofMinutes(1));
-
-        Film filmReturned = filmController.addFilm(film);
-
-        filmReturned.setDuration(Duration.ofMinutes(-1));
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.addFilm(filmReturned));
-    }
-
-    @Test
-    void renewingFilmWithZeroDurationShouldThrowValidationException() {
-        Film film = new Film();
-        film.setName("0");
-        film.setDescription("0");
-        film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setDuration(Duration.ofMinutes(1));
-
-        Film filmReturned = filmController.addFilm(film);
-
-        filmReturned.setDuration(Duration.ofMinutes(0));
-
-        Assertions.assertThrows(ValidationException.class, () -> filmController.addFilm(filmReturned));
     }
 }

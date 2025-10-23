@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -46,17 +45,6 @@ public class UserControllerValidationTests {
     }
 
     @Test
-    void addingUserWithBirthdayInFutureShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0");
-        user.setName("0");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.now().plusDays(1));
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.addUser(user));
-    }
-
-    @Test
     void correctUserRenewingShouldReturnSameUser() {
         User user = new User();
         user.setLogin("0");
@@ -94,20 +82,5 @@ public class UserControllerValidationTests {
         User userAfterRenewal = userController.renewUser(userReturned);
 
         Assertions.assertEquals("0", userAfterRenewal.getName());
-    }
-
-    @Test
-    void renewingUserWithBirthdayInFutureShouldThrowValidationException() {
-        User user = new User();
-        user.setLogin("0");
-        user.setName("0");
-        user.setEmail("mail@mail.ru");
-        user.setBirthday(LocalDate.now());
-
-        User userAfterAdding = userController.addUser(user);
-
-        userAfterAdding.setBirthday(LocalDate.now().plusDays(1));
-
-        Assertions.assertThrows(ValidationException.class, () -> userController.renewUser(userAfterAdding));
     }
 }

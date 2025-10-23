@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.annotations.BirthdayConstraint;
 
 import java.time.LocalDate;
 
@@ -19,5 +20,7 @@ public class User {
     @Pattern(regexp = "^\\S*$", message = "Логин не должен содержать пробелов")
     private String login;
     private String name;
+
+    @BirthdayConstraint
     private LocalDate birthday;
 }
