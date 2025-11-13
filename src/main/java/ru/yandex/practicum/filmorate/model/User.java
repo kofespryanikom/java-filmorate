@@ -5,6 +5,8 @@ import lombok.Data;
 import ru.yandex.practicum.filmorate.annotations.BirthdayConstraint;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class User {
@@ -23,4 +25,5 @@ public class User {
 
     @BirthdayConstraint
     private LocalDate birthday;
+    private Set<Long> friendsSet = new HashSet<>();
 }

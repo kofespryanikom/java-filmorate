@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.serializer.DurationToMinutesSerializer;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class Film {
@@ -32,4 +33,5 @@ public class Film {
     @JsonSerialize(using = DurationToMinutesSerializer.class)
     @DurationConstraint
     private Duration duration;
+    private List<Long> usersLiked;
 }
