@@ -57,7 +57,7 @@ public class FilmController {
         return filmService.deleteLike(id, userId);
     }
 
-    @GetMapping("/popular?count={count}")
+    @GetMapping("/popular")
     public List<Film> returnMostLikedFilmsInAmountOfCount(@RequestParam(required = false) Long count) {
         if (count < 0) {
             throw new ValidationException("count не может быть отрицательным");

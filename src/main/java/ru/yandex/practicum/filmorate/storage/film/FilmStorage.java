@@ -15,10 +15,4 @@ public interface FilmStorage {
     Long getNextId();
 
     Film returnFilmByID(Long id);
-
-    Film addLike(Long id, Long userId);
-
-    Film deleteLike(Long id, Long userId);
-
-    List<Film> returnMostLikedFilmsInAmountOfCount(Long count);
 }

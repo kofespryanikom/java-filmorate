@@ -4,19 +4,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
     private Long id;
-    private Map<Long, Film> films;
+    private final Map<Long, Film> films;
 
-    public InMemoryFilmStorage() {
+    public InMemoryFilmStorage(UserStorage userStorage) {
         id = 0L;
         films = new HashMap<>();
     }
@@ -75,58 +79,6 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Такого фильма не существует");
         }
         return films.get(id);
-    }
-
-    public Film addLike(Long id, Long userId) {
-        Film film = returnFilmByID(id);
-        if (!film.getUsersLiked().contains(userId)) {
-            film.getUsersLiked().add(userId);
-        }
-        log.info("Добавлен лайк фильму с id {} от пользователя с id {}", id, userId);
-        return film;
-    }
-
-    public Film deleteLike(Long id, Long userId) {
-        Film film = returnFilmByID(id);
-        film.getUsersLiked().remove(userId);
-        log.info("Убран лайк с фильма с id {} от пользователя с id {}", id, userId);
-        return film;
-    }
-
-    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count) {
-
-        Comparator<Film> userComparator = new Comparator<>() {
-            @Override
-            public int compare(Film film1, Film film2) {
-                return film1.getUsersLiked().size() - film2.getUsersLiked().size();
-            }
-        };
-
-        List<Film> sortedFilmList = films.values().stream()
-                .sorted(userComparator.reversed())
-                .toList();
-
-        if (count == null) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < 10; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-
-        } else if (sortedFilmList.size() >= count) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < count; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-
-        } else {
-            return sortedFilmList;
-        }
     }
 
     public Long getNextId() {

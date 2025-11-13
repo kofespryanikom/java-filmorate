@@ -108,8 +108,13 @@ public class InMemoryUserStorage implements UserStorage {
         return user;
     }
 
-    public Set<Long> returnUsersFriendsByUserId(Long id) {
-        return returnUserById(id).getFriendsSet();
+    public Set<User> returnUsersFriendsByUserId(Long id) {
+        Set<Long> friendsIds = returnUserById(id).getFriendsSet();
+        Set<User> friendsSetAsUsersSet = new HashSet<>();
+        for (Long friendsId : friendsIds) {
+            friendsSetAsUsersSet.add(returnUserById(friendsId));
+        }
+        return friendsSetAsUsersSet;
     }
 
     public List<User> getCommonFriendsByOneUserIdAndOtherId(Long id, Long otherId) {

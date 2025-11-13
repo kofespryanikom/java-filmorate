@@ -64,7 +64,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Set<Long> returnUsersFriendsByUserId (@PathVariable Long id) {
+    public Set<User> returnUsersFriendsByUserId (@PathVariable Long id) {
         if (id < 0) {
             throw new ValidationException("id не может быть отрицательным");
         }
