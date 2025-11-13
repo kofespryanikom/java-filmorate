@@ -48,7 +48,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriendByUserIdAndFriendId (@PathVariable Long id, @PathVariable Long friendId) {
+    public User addFriendByUserIdAndFriendId(@PathVariable Long id, @PathVariable Long friendId) {
         if (id < 0 || friendId < 0) {
             throw new ValidationException("id не может быть отрицательным");
         }
@@ -64,7 +64,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Set<User> returnUsersFriendsByUserId (@PathVariable Long id) {
+    public Set<User> returnUsersFriendsByUserId(@PathVariable Long id) {
         if (id < 0) {
             throw new ValidationException("id не может быть отрицательным");
         }
