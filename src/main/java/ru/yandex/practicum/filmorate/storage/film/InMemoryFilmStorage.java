@@ -20,7 +20,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private Long id;
     private final Map<Long, Film> films;
 
-    public InMemoryFilmStorage(UserStorage userStorage) {
+    public InMemoryFilmStorage() {
         id = 0L;
         films = new HashMap<>();
     }
