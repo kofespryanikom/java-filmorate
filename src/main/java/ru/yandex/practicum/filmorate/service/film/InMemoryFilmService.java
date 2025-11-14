@@ -18,7 +18,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Validated
-public class InMemoryFilmService implements FilmService{
+public class InMemoryFilmService implements FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;

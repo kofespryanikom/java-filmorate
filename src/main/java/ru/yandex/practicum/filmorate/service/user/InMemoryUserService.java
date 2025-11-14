@@ -14,7 +14,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Validated
-public class InMemoryUserService implements UserService{
+public class InMemoryUserService implements UserService {
 
     private final UserStorage userStorage;
 

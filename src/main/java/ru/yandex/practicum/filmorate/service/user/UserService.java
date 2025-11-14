@@ -20,8 +20,8 @@ public interface UserService {
                                       @PositiveOrZero(message = "id должен быть положительным") Long friendId);
 
     User deleteFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                                              @PositiveOrZero(message = "id должен быть положительным")
-                                              Long friendId);
+                                         @PositiveOrZero(message = "id должен быть положительным")
+                                         Long friendId);
 
     Set<User> returnUsersFriendsByUserId(@PositiveOrZero(message = "id должен быть положительным") Long id);
 
