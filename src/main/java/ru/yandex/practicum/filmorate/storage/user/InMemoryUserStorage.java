@@ -6,7 +6,10 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -87,47 +90,7 @@ public class InMemoryUserStorage implements UserStorage {
         return users.get(id);
     }
 
-    public User addFriendByUserIdAndFriendId(Long id, Long friendId) {
-        User user = returnUserById(id);
-        User friend = returnUserById(friendId);
-
-        user.getFriendsSet().add(friendId);
-        friend.getFriendsSet().add(id);
-
-        log.info("Пользователь с id {} добавил в друзья пользователя с id {}", id, friendId);
-        return user;
-    }
-
-    public User deleteFriendByUserIdAndFriendId(Long id, Long friendId) {
-        User user = returnUserById(id);
-        User friend = returnUserById(friendId);
-
-        user.getFriendsSet().remove(friendId);
-        friend.getFriendsSet().remove(id);
-        log.info("Пользователь с id {} удалил из друзей пользователя с id {}", id, friendId);
-        return user;
-    }
-
-    public Set<User> returnUsersFriendsByUserId(Long id) {
-        Set<Long> friendsIds = returnUserById(id).getFriendsSet();
-        Set<User> friendsSetAsUsersSet = new HashSet<>();
-        for (Long friendsId : friendsIds) {
-            friendsSetAsUsersSet.add(returnUserById(friendsId));
-        }
-        return friendsSetAsUsersSet;
-    }
-
-    public List<User> getCommonFriendsByOneUserIdAndOtherId(Long id, Long otherId) {
-        User user = returnUserById(id);
-        User otherFriend = returnUserById(otherId);
-        List<User> commonFriends = new ArrayList<>();
-
-        for (Long friendIdFromFriendList : user.getFriendsSet()) {
-            if (otherFriend.getFriendsSet().contains(friendIdFromFriendList)) {
-                commonFriends.add(users.get(friendIdFromFriendList));
-            }
-        }
-
-        return commonFriends;
+    public Map<Long, User> returnUsersMap() {
+        return users;
     }
 }

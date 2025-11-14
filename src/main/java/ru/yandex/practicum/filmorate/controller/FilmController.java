@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import java.util.List;
 
@@ -25,9 +25,6 @@ public class FilmController {
 
     @GetMapping("/{id}")
     public Film returnFilmByID(@PathVariable Long id) {
-        if (id < 0) {
-            throw new ValidationException("id не может быть отрицательным");
-        }
         return filmService.returnFilmByID(id);
     }
 
@@ -43,17 +40,11 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public Film addLike(@PathVariable Long id, @PathVariable Long userId) {
-        if (id < 0 || userId < 0) {
-            throw new ValidationException("id не может быть отрицательным");
-        }
         return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public Film deleteLike(@PathVariable Long id, @PathVariable Long userId) {
-        if (id < 0 || userId < 0) {
-            throw new ValidationException("id не может быть отрицательным");
-        }
         return filmService.deleteLike(id, userId);
     }
 

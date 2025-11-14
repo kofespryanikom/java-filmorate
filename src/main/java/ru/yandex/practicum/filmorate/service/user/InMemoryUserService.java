@@ -1,21 +1,20 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.user;
 
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserService {
+@Validated
+public class InMemoryUserService implements UserService{
 
     private final UserStorage userStorage;
 
@@ -23,7 +22,7 @@ public class UserService {
         return userStorage.returnUsersList();
     }
 
-    public User returnUserById(@PathVariable Long id) {
+    public User returnUserById(@PositiveOrZero(message = "id должен быть положительным") Long id) {
         return userStorage.returnUserById(id);
     }
 
@@ -35,7 +34,8 @@ public class UserService {
         return userStorage.renewUser(user);
     }
 
-    public User addFriendByUserIdAndFriendId(Long id, Long friendId) {
+    public User addFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,
+                                             @PositiveOrZero(message = "id должен быть положительным") Long friendId) {
         User user = returnUserById(id);
         User friend = returnUserById(friendId);
 
@@ -46,7 +46,9 @@ public class UserService {
         return user;
     }
 
-    public User deleteFriendByUserIdAndFriendId(Long id, Long friendId) {
+    public User deleteFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,
+                                                @PositiveOrZero(message = "id должен быть положительным")
+                                                Long friendId) {
         User user = returnUserById(id);
         User friend = returnUserById(friendId);
 
@@ -56,23 +58,29 @@ public class UserService {
         return user;
     }
 
-    public Set<User> returnUsersFriendsByUserId(Long id) {
+    public Set<User> returnUsersFriendsByUserId(@PositiveOrZero(message = "id должен быть положительным") Long id) {
         Set<Long> friendsIds = returnUserById(id).getFriendsSet();
+        Map<Long, User> allUsersMap = userStorage.returnUsersMap();
         Set<User> friendsSetAsUsersSet = new HashSet<>();
+
         for (Long friendsId : friendsIds) {
-            friendsSetAsUsersSet.add(returnUserById(friendsId));
+            friendsSetAsUsersSet.add(allUsersMap.get(friendsId));
         }
         return friendsSetAsUsersSet;
     }
 
-    public List<User> getCommonFriendsByOneUserIdAndOtherId(Long id, Long otherId) {
+    public List<User> getCommonFriendsByOneUserIdAndOtherId(@PositiveOrZero(message = "id должен быть положительным")
+                                                            Long id,
+                                                            @PositiveOrZero(message = "id должен быть положительным")
+                                                            Long otherId) {
         User user = returnUserById(id);
         User otherFriend = returnUserById(otherId);
+        Map<Long, User> allUsersMap = userStorage.returnUsersMap();
         List<User> commonFriends = new ArrayList<>();
 
         for (Long friendIdFromFriendList : user.getFriendsSet()) {
             if (otherFriend.getFriendsSet().contains(friendIdFromFriendList)) {
-                commonFriends.add(userStorage.returnUserById(friendIdFromFriendList));
+                commonFriends.add(allUsersMap.get(friendIdFromFriendList));
             }
         }
 

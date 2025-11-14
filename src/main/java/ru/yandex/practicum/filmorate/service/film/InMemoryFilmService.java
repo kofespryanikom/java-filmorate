@@ -1,10 +1,11 @@
-package ru.yandex.practicum.filmorate.service;
+package ru.yandex.practicum.filmorate.service.film;
 
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -16,7 +17,8 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class FilmService {
+@Validated
+public class InMemoryFilmService implements FilmService{
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
@@ -25,10 +27,7 @@ public class FilmService {
         return filmStorage.returnFilmsList();
     }
 
-    public Film returnFilmByID(Long id) {
-        if (id < 0) {
-            throw new ValidationException("id не может быть отрицательным");
-        }
+    public Film returnFilmByID(@PositiveOrZero(message = "id должен быть положительным") Long id) {
         return filmStorage.returnFilmByID(id);
     }
 
@@ -40,7 +39,8 @@ public class FilmService {
         return filmStorage.renewFilm(film);
     }
 
-    public Film addLike(Long id, Long userId) {
+    public Film addLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
+                        @PositiveOrZero(message = "id должен быть положительным") Long userId) {
         if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
             throw new NotFoundException("Такого пользователя не существует");
         }
@@ -51,7 +51,8 @@ public class FilmService {
         return film;
     }
 
-    public Film deleteLike(Long id, Long userId) {
+    public Film deleteLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
+                           @PositiveOrZero(message = "id должен быть положительным") Long userId) {
         if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
             throw new NotFoundException("Такого пользователя не существует");
         }
