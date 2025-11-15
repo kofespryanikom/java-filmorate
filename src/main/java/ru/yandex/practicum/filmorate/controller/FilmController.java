@@ -1,78 +1,58 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-    private Long id = 0L;
-    private Map<Long, Film> films = new HashMap<>();
+
+    private final FilmService filmService;
 
     @GetMapping
     public List<Film> returnFilmsList() {
-        return new ArrayList<>(films.values());
+        return filmService.returnFilmsList();
+    }
+
+    @GetMapping("/{id}")
+    public Film returnFilmByID(@PathVariable Long id) {
+        return filmService.returnFilmByID(id);
     }
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
-        String name = film.getName();
-        String description = film.getDescription();
-        LocalDate releaseDate = film.getReleaseDate();
-        Duration duration = film.getDuration();
-        Film filmToBeAdded = new Film();
-
-        id = getNextId();
-        filmToBeAdded.setId(id);
-        filmToBeAdded.setDuration(duration);
-        filmToBeAdded.setName(name);
-        filmToBeAdded.setDescription(description);
-        filmToBeAdded.setReleaseDate(releaseDate);
-        films.put(id, filmToBeAdded);
-
-        log.info("Добавлен фильм: {}", name);
-
-        return films.get(id);
+        return filmService.addFilm(film);
     }
 
     @PutMapping
     public Film renewFilm(@Valid @RequestBody Film film) {
-        Long id = film.getId();
-        String name = film.getName();
-        String description = film.getDescription();
-        LocalDate releaseDate = film.getReleaseDate();
-        Duration duration = film.getDuration();
-        Film filmToBeAdded = new Film();
-
-        if (!films.containsKey(id)) {
-            log.error("Такого фильма не существует");
-            throw new ValidationException("Такого фильма не существует");
-        }
-
-        filmToBeAdded.setId(id);
-        filmToBeAdded.setDuration(duration);
-        filmToBeAdded.setName(name);
-        filmToBeAdded.setDescription(description);
-        filmToBeAdded.setReleaseDate(releaseDate);
-        films.put(id, filmToBeAdded);
-
-        log.info("Обновлен фильм: {}", name);
-
-        return films.get(id);
+        return filmService.renewFilm(film);
     }
 
-    public Long getNextId() {
-        return ++id;
+    @PutMapping("/{id}/like/{userId}")
+    public Film addLike(@PathVariable Long id, @PathVariable Long userId) {
+        return filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public Film deleteLike(@PathVariable Long id, @PathVariable Long userId) {
+        return filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> returnMostLikedFilmsInAmountOfCount(@RequestParam(required = false) Long count) {
+        if (count < 0) {
+            throw new ValidationException("count не может быть отрицательным");
+        }
+        return filmService.returnMostLikedFilmsInAmountOfCount(count);
     }
 }

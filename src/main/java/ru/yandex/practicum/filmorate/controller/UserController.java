@@ -1,85 +1,65 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
-    private Long id = 0L;
-    private Map<Long, User> users = new HashMap<>();
+    private final UserService userService;
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public List<User> returnUsersList() {
-        return new ArrayList<>(users.values());
+        return userService.returnUsersList();
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public User returnUserById(@PathVariable Long id) {
+        return userService.returnUserById(id);
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public User addUser(@Valid @RequestBody User user) {
-        String email = user.getEmail();
-        String login = user.getLogin();
-        String name = user.getName();
-        LocalDate birthdayDate = user.getBirthday();
-        User userToBeAdded = new User();
-
-        id = getNextId();
-        if (name == null || name.isBlank()) {
-            userToBeAdded.setName(login);
-        } else {
-            userToBeAdded.setName(name);
-        }
-        userToBeAdded.setId(id);
-        userToBeAdded.setLogin(login);
-        userToBeAdded.setEmail(email);
-        userToBeAdded.setBirthday(birthdayDate);
-        users.put(id, userToBeAdded);
-
-        log.info("Добавлен пользователь: {}", name);
-
-        return users.get(id);
+        return userService.addUser(user);
     }
 
     @PutMapping
+    @ResponseStatus(HttpStatus.OK)
     public User renewUser(@Valid @RequestBody User user) {
-        Long id = user.getId();
-        String email = user.getEmail();
-        String login = user.getLogin();
-        String name = user.getName();
-        LocalDate birthdayDate = user.getBirthday();
-        User userToBeAdded = new User();
-
-        if (!users.containsKey(id)) {
-            log.error("Такого пользователя не существует");
-            throw new ValidationException("Такого пользователя не существует");
-        }
-        if (name == null || name.isBlank()) {
-            userToBeAdded.setName(login);
-        } else {
-            userToBeAdded.setName(name);
-        }
-        userToBeAdded.setId(id);
-        userToBeAdded.setLogin(login);
-        userToBeAdded.setEmail(email);
-        userToBeAdded.setBirthday(birthdayDate);
-        users.put(id, userToBeAdded);
-
-        log.info("Обновлен пользователь: {}", name);
-
-        return users.get(id);
+        return userService.renewUser(user);
     }
 
-    public Long getNextId() {
-        return ++id;
+    @PutMapping("/{id}/friends/{friendId}")
+    public User addFriendByUserIdAndFriendId(@PathVariable Long id, @PathVariable Long friendId) {
+        return userService.addFriendByUserIdAndFriendId(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public User deleteFriendByUserIdAndFriendId(@PathVariable Long id, @PathVariable Long friendId) {
+        return userService.deleteFriendByUserIdAndFriendId(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public Set<User> returnUsersFriendsByUserId(@PathVariable Long id) {
+        return userService.returnUsersFriendsByUserId(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getCommonFriendsByOneUserIdAndOtherId(@PathVariable Long id, @PathVariable Long otherId) {
+        return userService.getCommonFriendsByOneUserIdAndOtherId(id, otherId);
     }
 }
