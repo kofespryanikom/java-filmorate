@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service.user;
 
 import jakarta.validation.constraints.PositiveOrZero;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.User.User;
 
 import java.util.List;
 import java.util.Set;

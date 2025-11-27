@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import jakarta.validation.constraints.PositiveOrZero;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Film.Film;
 
 import java.util.List;
 
