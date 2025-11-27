@@ -1,2 +1,2 @@
 # java-filmorate
-![ER-diagram](ER-diagram)
+![ER-diagram](ER-diagram.png)
