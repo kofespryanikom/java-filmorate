@@ -5,19 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
 
 @Slf4j
-@Service
+@Service("UserDbService")
 @Validated
-public class InMemoryUserService implements UserService {
+public class UserDbService implements UserService {
 
     private final UserStorage userStorage;
 
-    public InMemoryUserService(@Qualifier("InMemoryUserStorage") UserStorage userStorage) {
+    public UserDbService(@Qualifier("UserDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -38,12 +39,17 @@ public class InMemoryUserService implements UserService {
     }
 
     public Set<User> addFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                                                   @PositiveOrZero(message = "id должен быть положительным") Long friendId) {
+                                             @PositiveOrZero(message = "id должен быть положительным") Long friendId) {
         User user = returnUserById(id);
-        User friend = returnUserById(friendId);
+        List<User> allExistingUsers = userStorage.returnUsersList();
+        List<Long> allExistingUsersIds = allExistingUsers.stream().map(u -> u.getId()).toList();
 
+        if (!allExistingUsersIds.contains(friendId)) {
+            log.warn("Потенциальный друг с id {} не найден", friendId);
+            throw new NotFoundException("Потенциальный друг с id " + friendId + " не найден");
+        }
         user.getFriendsList().add(friendId);
-        friend.getFriendsList().add(id);
+        userStorage.renewUser(user);
 
         log.info("Пользователь с id {} добавил в друзья пользователя с id {}", id, friendId);
         return returnUsersFriendsByUserId(id);
@@ -53,10 +59,16 @@ public class InMemoryUserService implements UserService {
                                                 @PositiveOrZero(message = "id должен быть положительным")
                                                 Long friendId) {
         User user = returnUserById(id);
-        User friend = returnUserById(friendId);
+        List<User> allExistingUsers = userStorage.returnUsersList();
+        List<Long> allExistingUsersIds = allExistingUsers.stream().map(u -> u.getId()).toList();
+
+        if (!allExistingUsersIds.contains(friendId)) {
+            log.warn("Пользователь с id {} не найден", friendId);
+            throw new NotFoundException("Пользователь с id " + friendId + " не найден");
+        }
 
         user.getFriendsList().remove(friendId);
-        friend.getFriendsList().remove(id);
+        userStorage.renewUser(user);
         log.info("Пользователь с id {} удалил из друзей пользователя с id {}", id, friendId);
         return user;
     }

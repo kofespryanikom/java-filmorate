@@ -1,6 +1,6 @@
-package ru.yandex.practicum.filmorate.storage.user;
+package ru.yandex.practicum.filmorate.storage;
 
-import ru.yandex.practicum.filmorate.model.User.User;
+import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.util.List;
 import java.util.Map;
@@ -12,8 +12,6 @@ public interface UserStorage {
     User addUser(User user);
 
     User renewUser(User user);
-
-    Long getNextId();
 
     User returnUserById(Long id);
 

@@ -19,4 +19,10 @@ public class ErrorHandler {
     public ErrorResponse validationExceptionHandler(ValidationException e) {
         return new ErrorResponse("Ошибка валидации", e.getMessage());
     }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler
+    public ErrorResponse internalServerErrorHandler(InternalServerErrorException e) {
+        return new ErrorResponse("Внутренняя ошибка сервера", e.getMessage());
+    }
 }

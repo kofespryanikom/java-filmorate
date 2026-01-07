@@ -1,22 +1,27 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film.Film;
+import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.model.film.Genre;
+import ru.yandex.practicum.filmorate.model.film.Rating;
 
 import java.util.List;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
-@RequiredArgsConstructor
 public class FilmController {
 
     private final FilmService filmService;
+
+    public FilmController(@Qualifier("FilmDbService") FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping
     public List<Film> returnFilmsList() {
@@ -54,5 +59,25 @@ public class FilmController {
             throw new ValidationException("count не может быть отрицательным");
         }
         return filmService.returnMostLikedFilmsInAmountOfCount(count);
+    }
+
+    @GetMapping("/genres")
+    public List<String> getGenresList() {
+        return filmService.getGenresList();
+    }
+
+    @GetMapping("/genres/{id}")
+    public Genre getGenre(@PathVariable Integer id) {
+        return filmService.getGenre(id);
+    }
+
+    @GetMapping("/mpa")
+    public List<String> getRatingsList() {
+        return filmService.getRatingsList();
+    }
+
+    @GetMapping("/mpa/{id}")
+    public Rating getRating(@PathVariable Integer id) {
+        return filmService.getRating(id);
     }
 }

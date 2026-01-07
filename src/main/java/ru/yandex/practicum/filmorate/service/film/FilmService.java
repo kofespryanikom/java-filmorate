@@ -1,7 +1,10 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-import ru.yandex.practicum.filmorate.model.Film.Film;
+import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.film.Genre;
+import ru.yandex.practicum.filmorate.model.film.Rating;
 
 import java.util.List;
 
@@ -23,5 +26,11 @@ public interface FilmService {
 
     List<Film> returnMostLikedFilmsInAmountOfCount(Long count);
 
+    List<String> getGenresList();
 
+    Genre getGenre(@Positive(message = "id должен быть положительным") Integer id);
+
+    List<String> getRatingsList();
+
+    Rating getRating(@Positive(message = "id должен быть положительным") Integer id);
 }

@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.User.User;
+import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.List;
@@ -13,11 +13,14 @@ import java.util.Set;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
+
+    public UserController(@Qualifier("UserDbService") UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -44,7 +47,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User addFriendByUserIdAndFriendId(@PathVariable Long id, @PathVariable Long friendId) {
+    public Set<User> addFriendByUserIdAndFriendId(@PathVariable Long id, @PathVariable Long friendId) {
         return userService.addFriendByUserIdAndFriendId(id, friendId);
     }
 

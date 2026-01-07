@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model.Film;
+package ru.yandex.practicum.filmorate.model.film;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -8,8 +8,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.annotations.DurationConstraint;
 import ru.yandex.practicum.filmorate.annotations.ReleaseDateConstraint;
+import ru.yandex.practicum.filmorate.deserializer.GenreObjectToIntegerDeserializer;
 import ru.yandex.practicum.filmorate.deserializer.MinutesToDurationDeserializer;
+import ru.yandex.practicum.filmorate.deserializer.MpaObjectToIntegerDeserializer;
 import ru.yandex.practicum.filmorate.serializer.DurationToMinutesSerializer;
+import ru.yandex.practicum.filmorate.serializer.IntegerToGenreSerializer;
+import ru.yandex.practicum.filmorate.serializer.IntegerToMpaSerializer;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -35,6 +39,12 @@ public class Film {
     @DurationConstraint
     private Duration duration;
     private Set<Long> usersLiked = new HashSet<>();
-    private Set<Genre> genres;
-    private Rating rating;
+
+    @JsonDeserialize(contentUsing = GenreObjectToIntegerDeserializer.class)
+    @JsonSerialize(contentUsing = IntegerToGenreSerializer.class)
+    private Set<Integer> genres = new HashSet<>();
+
+    @JsonDeserialize(using = MpaObjectToIntegerDeserializer.class)
+    @JsonSerialize(using = IntegerToMpaSerializer.class)
+    private Integer mpa;
 }
