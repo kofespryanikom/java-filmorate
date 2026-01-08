@@ -35,12 +35,6 @@ public class Film {
     @DurationConstraint
     private Duration duration;
     private Set<Long> usersLiked = new HashSet<>();
-
-//    @JsonDeserialize(contentUsing = GenreObjectToIntegerDeserializer.class)
-//    @JsonSerialize(contentUsing = IntegerToGenreSerializer.class)
     private Set<Genre> genres = new HashSet<>();
-
-//    @JsonDeserialize(using = MpaObjectToIntegerDeserializer.class)
-//    @JsonSerialize(using = IntegerToMpaSerializer.class)
     private Rating mpa;
 }
