@@ -14,7 +14,6 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/films")
 public class FilmController {
 
     private final FilmService filmService;
@@ -23,37 +22,37 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @GetMapping
+    @GetMapping("/films")
     public List<Film> returnFilmsList() {
         return filmService.returnFilmsList();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/films/{id}")
     public Film returnFilmByID(@PathVariable Long id) {
         return filmService.returnFilmByID(id);
     }
 
-    @PostMapping
+    @PostMapping("/films")
     public Film addFilm(@Valid @RequestBody Film film) {
         return filmService.addFilm(film);
     }
 
-    @PutMapping
+    @PutMapping("/films")
     public Film renewFilm(@Valid @RequestBody Film film) {
         return filmService.renewFilm(film);
     }
 
-    @PutMapping("/{id}/like/{userId}")
+    @PutMapping("/films/{id}/like/{userId}")
     public Film addLike(@PathVariable Long id, @PathVariable Long userId) {
         return filmService.addLike(id, userId);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping("/films/{id}/like/{userId}")
     public Film deleteLike(@PathVariable Long id, @PathVariable Long userId) {
         return filmService.deleteLike(id, userId);
     }
 
-    @GetMapping("/popular")
+    @GetMapping("/films/popular")
     public List<Film> returnMostLikedFilmsInAmountOfCount(@RequestParam(required = false) Long count) {
         if (count < 0) {
             throw new ValidationException("count не может быть отрицательным");
@@ -62,7 +61,7 @@ public class FilmController {
     }
 
     @GetMapping("/genres")
-    public List<String> getGenresList() {
+    public List<Genre> getGenresList() {
         return filmService.getGenresList();
     }
 
@@ -72,7 +71,7 @@ public class FilmController {
     }
 
     @GetMapping("/mpa")
-    public List<String> getRatingsList() {
+    public List<Rating> getRatingsList() {
         return filmService.getRatingsList();
     }
 

@@ -113,7 +113,7 @@ public class FilmDbService implements FilmService {
         }
     }
 
-    public List<String> getGenresList() {
+    public List<Genre> getGenresList() {
         return filmStorage.getGenresList();
     }
 
@@ -121,7 +121,7 @@ public class FilmDbService implements FilmService {
         return filmStorage.getGenre(id);
     }
 
-    public List<String> getRatingsList() {
+    public List<Rating> getRatingsList() {
         return filmStorage.getRatingsList();
     }
 

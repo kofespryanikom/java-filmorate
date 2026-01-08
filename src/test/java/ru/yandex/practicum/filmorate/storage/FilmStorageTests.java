@@ -8,13 +8,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.film.Genre;
+import ru.yandex.practicum.filmorate.model.film.Rating;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.dao.film.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.film.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.user.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.user.UserDbStorage;
-import ru.yandex.practicum.filmorate.model.film.Genre;
-import ru.yandex.practicum.filmorate.model.film.Rating;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -48,21 +48,29 @@ public class FilmStorageTests {
         user2.setBirthday(LocalDate.of(2018, 1, 1));
         User userAdded2 = userStorage.addUser(user2);
 
+        Rating rating = new Rating();
+        rating.setId(2);
+        rating.setName("PG");
+        Genre genre = new Genre();
+        genre.setId(1);
+        genre.setName("Комедия");
+
         Film film = new Film();
         film.setName("film1");
         film.setDescription("film1");
         film.setDuration(Duration.ofMinutes(90));
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setMpa(2);
-        film.setGenres(Set.of(1, 2, 5));
+        film.setMpa(rating);
+        film.setGenres(Set.of(genre));
         film.setUsersLiked(Set.of(userAdded1.getId(), userAdded2.getId()));
         Film filmAdded = filmStorage.addFilm(film);
 
         Film filmReturned = filmStorage.returnFilmByID(filmAdded.getId());
 
         Assertions.assertEquals("film1", filmReturned.getName());
-        Assertions.assertEquals(2, filmReturned.getMpa());
-        Assertions.assertEquals(Set.of(1, 2, 5), filmReturned.getGenres());
+        Assertions.assertEquals(2, filmReturned.getMpa().getId());
+
+        Assertions.assertEquals(Set.of(genre), filmReturned.getGenres());
         Assertions.assertEquals(Set.of(userAdded1.getId(), userAdded2.getId()), filmReturned.getUsersLiked());
     }
 
@@ -74,6 +82,13 @@ public class FilmStorageTests {
         user1.setName("a");
         user1.setBirthday(LocalDate.of(2018, 1, 1));
         User userAdded1 = userStorage.addUser(user1);
+
+        Rating rating = new Rating();
+        rating.setId(2);
+        rating.setName("PG");
+        Genre genre = new Genre();
+        genre.setId(1);
+        genre.setName("Комедия");
 
         User user2 = new User();
         user2.setEmail("b@outlook.com");
@@ -87,8 +102,8 @@ public class FilmStorageTests {
         film.setDescription("film1");
         film.setDuration(Duration.ofMinutes(90));
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setMpa(2);
-        film.setGenres(Set.of(1, 2, 5));
+        film.setMpa(rating);
+        film.setGenres(Set.of(genre));
         film.setUsersLiked(Set.of(userAdded1.getId(), userAdded2.getId()));
         Film filmAdded = filmStorage.addFilm(film);
 
@@ -113,13 +128,20 @@ public class FilmStorageTests {
         user2.setBirthday(LocalDate.of(2018, 1, 1));
         User userAdded2 = userStorage.addUser(user2);
 
+        Rating rating = new Rating();
+        rating.setId(2);
+        rating.setName("PG");
+        Genre genre = new Genre();
+        genre.setId(1);
+        genre.setName("Комедия");
+
         Film film1 = new Film();
         film1.setName("film1");
         film1.setDescription("film1");
         film1.setDuration(Duration.ofMinutes(90));
         film1.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film1.setMpa(2);
-        film1.setGenres(Set.of(1, 2, 5));
+        film1.setMpa(rating);
+        film1.setGenres(Set.of(genre));
         film1.setUsersLiked(Set.of(userAdded1.getId(), userAdded2.getId()));
         Film filmAdded1 = filmStorage.addFilm(film1);
 
@@ -128,8 +150,8 @@ public class FilmStorageTests {
         film2.setDescription("film1");
         film2.setDuration(Duration.ofMinutes(90));
         film2.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film2.setMpa(2);
-        film2.setGenres(Set.of(1, 2, 5));
+        film2.setMpa(rating);
+        film2.setGenres(Set.of(genre));
         film2.setUsersLiked(Set.of(userAdded1.getId(), userAdded2.getId()));
         Film filmAdded2 = filmStorage.addFilm(film2);
 
@@ -155,13 +177,20 @@ public class FilmStorageTests {
         user2.setBirthday(LocalDate.of(2018, 1, 1));
         User userAdded2 = userStorage.addUser(user2);
 
+        Rating rating = new Rating();
+        rating.setId(2);
+        rating.setName("PG");
+        Genre genre = new Genre();
+        genre.setId(1);
+        genre.setName("Комедия");
+
         Film film = new Film();
         film.setName("film1");
         film.setDescription("film1");
         film.setDuration(Duration.ofMinutes(90));
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
-        film.setMpa(2);
-        film.setGenres(Set.of(1, 2, 5));
+        film.setMpa(rating);
+        film.setGenres(Set.of(genre));
         film.setUsersLiked(Set.of(userAdded1.getId(), userAdded2.getId()));
         Film filmAdded = filmStorage.addFilm(film);
 
@@ -176,30 +205,34 @@ public class FilmStorageTests {
 
     @Test
     public void testGetGenresList() {
-        List<String> genres = filmStorage.getGenresList();
+        List<Genre> genres = filmStorage.getGenresList();
 
-        Assertions.assertEquals(List.of("COMEDY", "DRAMA", "CARTOON", "THRILLER", "DOCUMENTARY", "ACTION_MOVIE"),
-                genres);
+        Assertions.assertEquals(List.of("Комедия", "Драма", "Мультфильм", "Триллер", "Документальный",
+                        "Боевик"),
+                genres.stream().map(genre -> genre.getName()).toList());
     }
 
     @Test
     public void testGetGenre() {
         Genre genre = filmStorage.getGenre(2);
 
-        Assertions.assertEquals("DRAMA", genre.getGenre());
+        Assertions.assertEquals("Драма", genre.getName());
     }
 
     @Test
     public void testGetRatingsList() {
-        List<String> ratings = filmStorage.getRatingsList();
+        List<Rating> ratings = filmStorage.getRatingsList();
 
-        Assertions.assertEquals(List.of("G", "PG", "PG_13", "R", "NC_17"), ratings);
+        Assertions.assertEquals(List.of("G", "PG", "PG-13", "R", "NC-17"), ratings.stream()
+                .map(rating -> rating.getName()).toList());
     }
 
     @Test
     public void testGetRating() {
         Rating rating = filmStorage.getRating(3);
 
-        Assertions.assertEquals("PG_13", rating.getRating());
+        Assertions.assertEquals("PG-13", rating.getName());
     }
+
+
 }

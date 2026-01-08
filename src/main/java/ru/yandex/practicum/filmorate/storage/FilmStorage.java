@@ -16,11 +16,11 @@ public interface FilmStorage {
 
     Film returnFilmByID(Long id);
 
-    List<String> getGenresList();
+    List<Genre> getGenresList();
 
     Genre getGenre(Integer id);
 
-    List<String> getRatingsList();
+    List<Rating> getRatingsList();
 
     Rating getRating(Integer id);
 }

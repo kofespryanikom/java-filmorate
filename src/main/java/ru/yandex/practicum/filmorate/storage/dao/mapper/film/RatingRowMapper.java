@@ -12,7 +12,7 @@ public class RatingRowMapper implements RowMapper<Rating> {
         Rating rating = new Rating();
 
         rating.setId(resultSet.getInt("rating_id"));
-        rating.setRating(resultSet.getString("rating"));
+        rating.setName(resultSet.getString("rating"));
 
         return rating;
     }

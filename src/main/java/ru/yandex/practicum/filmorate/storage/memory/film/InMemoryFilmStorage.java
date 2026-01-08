@@ -87,8 +87,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         return ++id;
     }
 
-    public List<String> getGenresList() {
-        return List.of("COMEDY", "DRAMA", "CARTOON", "THRILLER", "DOCUMENTARY", "ACTION_MOVIE");
+    public List<Genre> getGenresList() {
+        List<Genre> genres = new ArrayList<>();
+        return genres;
     }
 
     public Genre getGenre(Integer id) {
@@ -96,8 +97,9 @@ public class InMemoryFilmStorage implements FilmStorage {
         return new Genre();
     }
 
-    public List<String> getRatingsList() {
-        return List.of("G", "PG", "PG_13", "R", "NC_17");
+    public List<Rating> getRatingsList() {
+        List<Rating> ratings = new ArrayList<>();
+        return ratings;
     }
 
     public Rating getRating(Integer id) {

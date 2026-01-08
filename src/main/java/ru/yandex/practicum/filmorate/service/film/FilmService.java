@@ -26,11 +26,11 @@ public interface FilmService {
 
     List<Film> returnMostLikedFilmsInAmountOfCount(Long count);
 
-    List<String> getGenresList();
+    List<Genre> getGenresList();
 
     Genre getGenre(@Positive(message = "id должен быть положительным") Integer id);
 
-    List<String> getRatingsList();
+    List<Rating> getRatingsList();
 
     Rating getRating(@Positive(message = "id должен быть положительным") Integer id);
 }

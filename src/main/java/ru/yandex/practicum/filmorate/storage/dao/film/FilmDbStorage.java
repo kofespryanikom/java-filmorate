@@ -8,6 +8,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.film.Genre;
+import ru.yandex.practicum.filmorate.model.film.Rating;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -18,8 +20,6 @@ import ru.yandex.practicum.filmorate.storage.dao.mapper.film.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.film.RatingRowMapper;
 import ru.yandex.practicum.filmorate.storage.dto.film.FilmGenreDto;
 import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
-import ru.yandex.practicum.filmorate.model.film.Genre;
-import ru.yandex.practicum.filmorate.model.film.Rating;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -58,18 +58,18 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                                                         "FROM films f " +
                                                         "JOIN users_liked ul ON f.film_id = ul.film_id " +
                                                         "WHERE f.film_id = ?";
-    private static final String FIND_ALL_GENRES_LIST_QUERY = "SELECT genre " +
-                                                             "FROM genres";
     private static final String FIND_GENRE_QUERY = "SELECT * " +
                                                    "FROM genres " +
                                                    "WHERE genre_id = ?";
-    private static final String FIND_ALL_RATINGS_QUERY = "SELECT rating " +
-                                                         "FROM rating ";
     private static final String FIND_RATING_QUERY = "SELECT * " +
                                                     "FROM rating " +
                                                     "WHERE rating_id = ?";
     private static final String FIND_GENRES_IDS_QUERY = "SELECT genre_id " +
                                                         "FROM genres";
+    private static final String FIND_RATINGS_QUERY = "SELECT * " +
+                                                     "FROM rating";
+    private static final String FIND_GENRES_QUERY = "SELECT * " +
+                                                    "FROM genres";
 
     private UserStorage userStorage;
 
@@ -83,9 +83,15 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         List<Film> uniqueFilms = findMany(FIND_ALL_UNIQUE_FILMS_ROWS_QUERY);
         List<FilmGenreDto> filmIdGenreObjects = jdbc.query(FIND_ALL_FILMS_GENRES_QUERY, new FilmGenresRowMapper());
         List<FilmLikeDto> filmIdLikeObjects = jdbc.query(FIND_ALL_FILMS_LIKES_QUERY, new FilmLikeRowMapper());
+        List<Rating> allRatings = jdbc.query(FIND_RATINGS_QUERY, new RatingRowMapper());
+        List<Genre> allGenres = jdbc.query(FIND_GENRES_QUERY, new GenreRowMapper());
 
         Map<Long, Film> uniqueFilmsMap = uniqueFilms.stream()
                 .collect(Collectors.toMap(film -> film.getId(), film -> film));
+        Map<Integer, Rating> allRatingsMap = allRatings.stream()
+                .collect(Collectors.toMap(rating -> rating.getId(), rating -> rating));
+        Map<Integer, Genre> allGenresMap = allGenres.stream()
+                .collect(Collectors.toMap(genre -> genre.getId(), genre -> genre));
 
         Film filmBeingCompleted;
         for (FilmLikeDto filmIdLikeObject : filmIdLikeObjects) {
@@ -96,7 +102,11 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         for (FilmGenreDto filmIdGenreObject : filmIdGenreObjects) {
             Long filmId = filmIdGenreObject.getFilmId();
             filmBeingCompleted = uniqueFilmsMap.get(filmId);
-            filmBeingCompleted.getGenres().add(filmIdGenreObject.getGenreId());
+            filmBeingCompleted.getGenres().add(allGenresMap.get(filmIdGenreObject.getGenreId()));
+        }
+        for (Film film : uniqueFilmsMap.values()) {
+            Integer ratingId = film.getMpa().getId();
+            film.getMpa().setName(allRatingsMap.get(ratingId).getName());
         }
 
         return new ArrayList<>(uniqueFilmsMap.values());
@@ -114,27 +124,28 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         String description = film.getDescription();
         LocalDate releaseDate = film.getReleaseDate();
         Duration duration = film.getDuration();
-        Integer rating = film.getMpa();
-        Set<Integer> genres = film.getGenres();
+        Rating rating = film.getMpa();
+        Set<Genre> genres = film.getGenres();
         Set<Long> usersLiked = film.getUsersLiked();
 
-        checkHasRatingIdNotFoundException(rating);
+        checkHasRatingIdNotFoundException(rating.getId());
         checkIsUsersLikedSetInUsersDb(usersLiked);
         List<Integer> genresIds = jdbc.queryForList(FIND_GENRES_IDS_QUERY, Integer.class);
-        for (Integer genreId : genres) {
-            if (!genresIds.contains(genreId)) {
-                throw new NotFoundException("Жанр с id " + genreId + " не найден");
+        for (Genre genre : genres) {
+            if (!genresIds.contains(genre.getId())) {
+                throw new NotFoundException("Жанр с id " + genre.getId() + " не найден");
             }
         }
 
-        Long justAddedFilmId = insert(ADD_FILM_ROW_QUERY, name, description, releaseDate, duration.toMinutes(), rating);
+        Long justAddedFilmId = insert(ADD_FILM_ROW_QUERY, name, description, releaseDate, duration.toMinutes(),
+                rating.getId());
 
         if (!genres.isEmpty()) {
             List<Long> genresToBeAddedToTable = new ArrayList<>();
-            for (Integer genreId : genres) {
+            for (Genre genre : genres) {
                 addFilmGenreQuery += "(?, ?),";
                 genresToBeAddedToTable.add(justAddedFilmId);
-                genresToBeAddedToTable.add(genreId.longValue());
+                genresToBeAddedToTable.add(genre.getId().longValue());
             }
             addFilmGenreQuery = addFilmGenreQuery.substring(0, addFilmGenreQuery.length() - 1);
             update(addFilmGenreQuery, genresToBeAddedToTable.toArray(new Object[0]));
@@ -172,21 +183,21 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         String description = film.getDescription();
         LocalDate releaseDate = film.getReleaseDate();
         Duration duration = film.getDuration();
-        Integer rating = film.getMpa();
-        Set<Integer> genres = film.getGenres();
+        Rating rating = film.getMpa();
+        Set<Genre> genres = film.getGenres();
         Set<Long> usersLiked = film.getUsersLiked();
 
-        checkHasRatingIdNotFoundException(rating);
+        checkHasRatingIdNotFoundException(rating.getId());
         checkIsUsersLikedSetInUsersDb(usersLiked);
         List<Integer> genresIds = jdbc.queryForList(FIND_GENRES_IDS_QUERY, Integer.class);
-        for (Integer genreId : genres) {
-            if (!genresIds.contains(genreId)) {
-                throw new NotFoundException("Жанр с id " + genreId + " не найден");
+        for (Genre genre : genres) {
+            if (!genresIds.contains(genre.getId())) {
+                throw new NotFoundException("Жанр с id " + genre.getId() + " не найден");
             }
         }
 
         boolean wereRowsUpdated = update(UPDATE_FILM_ROW_QUERY, name, description, releaseDate, duration.toMinutes(),
-                rating, filmId);
+                rating.getId(), filmId);
         if (!wereRowsUpdated) {
             log.warn("Не удалось обновить данные, объект c id {} не найден в таблице films", filmId);
             throw new NotFoundException("Не удалось обновить данные, объект с id " + filmId + " не найден в films");
@@ -197,10 +208,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         if (!genres.isEmpty()) {
             List<Long> genresToBeAddedToTable = new ArrayList<>();
-            for (Integer genreId : genres) {
+            for (Genre genre : genres) {
                 addFilmGenreQuery += "(?, ?),";
                 genresToBeAddedToTable.add(filmId);
-                genresToBeAddedToTable.add(genreId.longValue());
+                genresToBeAddedToTable.add(genre.getId().longValue());
             }
             addFilmGenreQuery = addFilmGenreQuery.substring(0, addFilmGenreQuery.length() - 1);
             update(addFilmGenreQuery, genresToBeAddedToTable.toArray(new Object[0]));
@@ -225,25 +236,32 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public Film returnFilmByID(Long id) {
         List<FilmGenreDto> filmIdGenreObjects = jdbc.query(FIND_FILM_GENRES_QUERY, new FilmGenresRowMapper(), id);
         List<FilmLikeDto> filmIdLikeObjects = jdbc.query(FIND_FILM_LIKES_QUERY, new FilmLikeRowMapper(), id);
+        List<Genre> allGenres = jdbc.query(FIND_GENRES_QUERY, new GenreRowMapper());
         Optional<Film> film = findOne(FIND_FILM_QUERY, id);
+
+        Map<Integer, Genre> allGenresMap = allGenres.stream()
+                .collect(Collectors.toMap(genre -> genre.getId(), genre -> genre));
 
         if (film.isEmpty()) {
             log.warn("Фильм с id {} не найден", id);
             throw new NotFoundException("Фильм с id " + id + " не найден");
         }
-        Film filmToBeCompleted = film.get();
 
+        Film filmToBeCompleted = film.get();
         for (FilmLikeDto filmIdLikeObject : filmIdLikeObjects) {
             filmToBeCompleted.getUsersLiked().add(filmIdLikeObject.getUserLikedId());
         }
         for (FilmGenreDto filmIdGenreObject : filmIdGenreObjects) {
-            filmToBeCompleted.getGenres().add(filmIdGenreObject.getGenreId());
+            filmToBeCompleted.getGenres().add(allGenresMap.get(filmIdGenreObject.getGenreId()));
         }
+        Integer ratingId = filmToBeCompleted.getMpa().getId();
+        filmToBeCompleted.getMpa().setName(getRating(ratingId).getName());
+
         return filmToBeCompleted;
     }
 
-    public List<String> getGenresList() {
-        List<String> genresList = jdbc.queryForList(FIND_ALL_GENRES_LIST_QUERY, String.class);
+    public List<Genre> getGenresList() {
+        List<Genre> genresList = jdbc.query(FIND_GENRES_QUERY, new GenreRowMapper());
 
         return genresList;
     }
@@ -261,8 +279,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         return genre;
     }
 
-    public List<String> getRatingsList() {
-        List<String> ratingsList = jdbc.queryForList(FIND_ALL_RATINGS_QUERY, String.class);
+    public List<Rating> getRatingsList() {
+        List<Rating> ratingsList = jdbc.query(FIND_RATINGS_QUERY, new RatingRowMapper());
 
         return ratingsList;
     }
