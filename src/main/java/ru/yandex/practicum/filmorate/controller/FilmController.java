@@ -18,7 +18,7 @@ public class FilmController {
 
     private final FilmService filmService;
 
-    public FilmController(@Qualifier("FilmDbService") FilmService filmService) {
+    public FilmController(@Qualifier("FilmServiceImpl") FilmService filmService) {
         this.filmService = filmService;
     }
 
@@ -54,9 +54,6 @@ public class FilmController {
 
     @GetMapping("/films/popular")
     public List<Film> returnMostLikedFilmsInAmountOfCount(@RequestParam(required = false) Long count) {
-        if (count < 0) {
-            throw new ValidationException("count не может быть отрицательным");
-        }
         return filmService.returnMostLikedFilmsInAmountOfCount(count);
     }
 

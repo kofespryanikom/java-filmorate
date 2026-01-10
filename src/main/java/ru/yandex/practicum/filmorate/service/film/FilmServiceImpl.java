@@ -18,15 +18,15 @@ import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
-@Service("FilmDbService")
+@Service("FilmServiceImpl")
 @Validated
-public class FilmDbService implements FilmService {
+public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-    public FilmDbService(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
-                               @Qualifier("UserDbStorage") UserStorage userStorage) {
+    public FilmServiceImpl(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
+                           @Qualifier("UserDbStorage") UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
@@ -77,7 +77,8 @@ public class FilmDbService implements FilmService {
         return film;
     }
 
-    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count) {
+    public List<Film> returnMostLikedFilmsInAmountOfCount(
+            @PositiveOrZero(message = "count не может быть отрицательным") Long count) {
 
         Comparator<Film> userComparator = new Comparator<>() {
             @Override

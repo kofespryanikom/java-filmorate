@@ -12,13 +12,13 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.util.*;
 
 @Slf4j
-@Service("UserDbService")
+@Service("UserServiceImpl")
 @Validated
-public class UserDbService implements UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
 
-    public UserDbService(@Qualifier("UserDbStorage") UserStorage userStorage) {
+    public UserServiceImpl(@Qualifier("UserDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 

@@ -18,7 +18,7 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(@Qualifier("UserDbService") UserService userService) {
+    public UserController(@Qualifier("UserServiceImpl") UserService userService) {
         this.userService = userService;
     }
 
