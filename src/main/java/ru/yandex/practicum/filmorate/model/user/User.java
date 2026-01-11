@@ -1,13 +1,12 @@
-package ru.yandex.practicum.filmorate.model.User;
+package ru.yandex.practicum.filmorate.model.user;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.annotations.BirthdayConstraint;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class User {
@@ -26,6 +25,5 @@ public class User {
 
     @BirthdayConstraint
     private LocalDate birthday;
-    private Set<Long> friendsSet = new HashSet<>();
-    private Map<Long, FriendshipConfirmation> friendshipConfirmationMap;
+    private List<Long> friendsList = new ArrayList<>();
 }

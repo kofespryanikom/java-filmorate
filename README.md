@@ -9,14 +9,21 @@
 - `genres` - справочник жанров
 - `film_genres` - таблица фильмов и их жанров
 - `users_liked` - таблица пользователей и фильмов, которые они оценили
-### Примеры запросов:
-#### Все фильмы:
+### Примеры запросов
+#### `FIND_ALL_FILMS_GENRES_QUERY`
 ```sql
-SELECT *
-FROM films;
+SELECT f.film_id, fg.genre_id
+FROM films f
+JOIN film_genres fg
+ON f.film_id = fg.film_id;
 ```
-#### Все пользователи:
+#### `UPDATE_FILM_ROW_QUERY`
 ```sql
-SELECT *
-FROM users;
+UPDATE films SET name = ?, description = ?, release_date = ?,
+duration = ?, rating_id = ?
+WHERE film_id = ?;
+```
+#### `DELETE_FILM_GENRE_QUERY`
+```sql
+DELETE FROM film_genres WHERE film_id = ?;
 ```

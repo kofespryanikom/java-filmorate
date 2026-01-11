@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.service.user;
 
 import jakarta.validation.constraints.PositiveOrZero;
-import ru.yandex.practicum.filmorate.model.User.User;
+import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.util.List;
 import java.util.Set;
@@ -16,7 +16,7 @@ public interface UserService {
 
     User renewUser(User user);
 
-    User addFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,
+    Set<User> addFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,
                                       @PositiveOrZero(message = "id должен быть положительным") Long friendId);
 
     User deleteFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,

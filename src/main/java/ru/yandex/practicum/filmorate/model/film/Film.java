@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model.Film;
+package ru.yandex.practicum.filmorate.model.film;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -35,6 +35,6 @@ public class Film {
     @DurationConstraint
     private Duration duration;
     private Set<Long> usersLiked = new HashSet<>();
-    private Set<Genre> genres;
-    private Rating rating;
+    private Set<Genre> genres = new HashSet<>();
+    private Rating mpa;
 }
