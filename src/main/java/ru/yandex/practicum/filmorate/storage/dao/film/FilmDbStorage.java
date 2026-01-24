@@ -80,7 +80,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                                                     "FROM genres";
 
     private static final String CHECK_FRIENDSHIP_QUERY = "SELECT COUNT(*) FROM friends WHERE " +
-            "((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) ";
+            "(user_id = ? AND friend_id = ?) ";
 
     private final UserStorage userStorage;
 
@@ -328,14 +328,22 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         User user2 = userStorage.returnUserById(friendId);
 
         Integer friendshipCount = jdbc.queryForObject(CHECK_FRIENDSHIP_QUERY, Integer.class,
-                userId, friendId, friendId, userId);
+                userId, friendId);
 
         if (friendshipCount == 0 || friendshipCount == null) {
-            throw new IllegalArgumentException("Пользователи не являются друзьями друг для друга!");
+            throw new NotFoundException("Пользователи не являются друзьями друг для друга!");
         }
 
         try {
-            return jdbc.query(FIND_COMMON_FILMS_QUERY, new FilmRowMapper(), userId, friendId);
+            List<Long> commonFilmsIds = jdbc.query(FIND_COMMON_FILMS_QUERY, new FilmRowMapper(), userId, friendId)
+                    .stream()
+                    .map(Film::getId).toList();
+
+            return commonFilmsIds.stream()
+                    .map(this::returnFilmByID)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
         } catch (EmptyResultDataAccessException e) {
             return Collections.emptyList();
         }
