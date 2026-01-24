@@ -105,4 +105,8 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Rating getRating(Integer id) {
         return new Rating();
     }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return new ArrayList<>();
+    }
 }

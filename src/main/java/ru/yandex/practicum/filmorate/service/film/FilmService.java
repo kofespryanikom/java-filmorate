@@ -34,4 +34,7 @@ public interface FilmService {
     List<Rating> getRatingsList();
 
     Rating getRating(@Positive(message = "id должен быть положительным") Integer id);
+
+    List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
+                              @Positive(message = "id должен быть положительным") Long friendId);
 }

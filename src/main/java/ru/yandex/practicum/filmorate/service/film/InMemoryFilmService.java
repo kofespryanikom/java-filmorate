@@ -122,4 +122,9 @@ public class InMemoryFilmService implements FilmService {
     public Rating getRating(@Positive(message = "id должен быть положительным") Integer id) {
         return filmStorage.getRating(id);
     }
+
+    public List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
+                              @Positive(message = "id должен быть положительным") Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.dao.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -14,10 +15,7 @@ import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
-import ru.yandex.practicum.filmorate.storage.dao.mapper.film.FilmGenresRowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.mapper.film.FilmLikeRowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.mapper.film.GenreRowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.mapper.film.RatingRowMapper;
+import ru.yandex.practicum.filmorate.storage.dao.mapper.film.*;
 import ru.yandex.practicum.filmorate.storage.dto.film.FilmGenreDto;
 import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
@@ -58,6 +56,16 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                                                         "FROM films f " +
                                                         "JOIN users_liked ul ON f.film_id = ul.film_id " +
                                                         "WHERE f.film_id = ?";
+
+    private static final String FIND_COMMON_FILMS_QUERY = "SELECT f.*, COUNT(DISTINCT ul_all.user_id) as like_count " +
+                                                            "FROM films f " +
+                                                            "JOIN users_liked ul ON ul.film_id = f.film_id " +
+                                                            "LEFT JOIN users_liked ul_all ON ul_all.film_id = f.film_id " +
+                                                            "WHERE ul.user_id IN (?, ?) " +
+                                                            "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.rating_id " +
+                                                            "HAVING COUNT(DISTINCT ul.user_id) = 2 " +
+                                                            "ORDER BY like_count DESC; ";
+
     private static final String FIND_GENRE_QUERY = "SELECT * " +
                                                    "FROM genres " +
                                                    "WHERE genre_id = ?";
@@ -71,7 +79,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_GENRES_QUERY = "SELECT * " +
                                                     "FROM genres";
 
-    private UserStorage userStorage;
+    private static final String CHECK_FRIENDSHIP_QUERY = "SELECT COUNT(*) FROM friends WHERE " +
+            "((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) ";
+
+    private final UserStorage userStorage;
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper,
                          @Qualifier("UserDbStorage") UserStorage userStorage) {
@@ -309,6 +320,24 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         if (!existingUsersIds.containsAll(usersLiked)) {
             log.warn("Множество лайкнувших пользователей в таблице пользователей не было найдено");
             throw new NotFoundException("Множество лайкнувших пользователей в таблице пользователей не было найдено");
+        }
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        User user1 = userStorage.returnUserById(userId);
+        User user2 = userStorage.returnUserById(friendId);
+
+        Integer friendshipCount = jdbc.queryForObject(CHECK_FRIENDSHIP_QUERY, Integer.class,
+                userId, friendId, friendId, userId);
+
+        if (friendshipCount == 0 || friendshipCount == null) {
+            throw new IllegalArgumentException("Пользователи не являются друзьями друг для друга!");
+        }
+
+        try {
+            return jdbc.query(FIND_COMMON_FILMS_QUERY, new FilmRowMapper(), userId, friendId);
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
         }
     }
 }
