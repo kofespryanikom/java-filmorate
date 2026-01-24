@@ -6,9 +6,13 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerErrorException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.user.EventType;
+import ru.yandex.practicum.filmorate.model.user.Feed;
+import ru.yandex.practicum.filmorate.model.user.Operation;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
+import ru.yandex.practicum.filmorate.storage.dao.mapper.user.FeedRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.user.FriendRowMapper;
 import ru.yandex.practicum.filmorate.storage.dto.user.UserFriendDto;
 
@@ -32,6 +36,11 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                                                         "FROM friends " +
                                                         "WHERE user_id = ?";
 
+    private static final String ADD_FEED_QUERY = "INSERT INTO feed (timestamp, user_id, event_type, operation, entity_id) " +
+            "VALUES (CURRENT_TIMESTAMP, ?, ?, ?, ?)";
+
+    private static final String FIND_FEEDS_QUERY = "SELECT * FROM feed WHERE user_id = ? ORDER BY timestamp DESC";
+
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
@@ -40,13 +49,15 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         List<User> uniqueUsers = findMany(FIND_ALL_USERS_QUERY);
         List<UserFriendDto> usersFriends = jdbc.query(FIND_ALL_USERS_FRIENDS, new FriendRowMapper());
         Map<Long, User> uniqueUsersMap = uniqueUsers.stream()
-                .collect(Collectors.toMap(user -> user.getId(), user -> user));
+                .collect(Collectors.toMap(User::getId, user -> user));
 
-        User userBeingCompleted;
         for (UserFriendDto userFriendDto : usersFriends) {
             Long userId = userFriendDto.getUserId();
-            userBeingCompleted = uniqueUsersMap.get(userId);
-            userBeingCompleted.getFriendsList().add(userFriendDto.getUserId());
+            Long friendId = userFriendDto.getFriendId();
+            User user = uniqueUsersMap.get(userId);
+            if (user != null) {
+                user.getFriendsList().add(friendId);
+            }
         }
 
         return new ArrayList<>(uniqueUsersMap.values());
@@ -143,5 +154,22 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         if (rowsUpdated == 0) {
             throw new InternalServerErrorException("Не удалось обновить данные");
         }
+    }
+
+    public void addFeed(Long userId, EventType eventType, Operation operation, Long entity_id) {
+        Feed feed = new Feed();
+
+        feed.setUserId(userId);
+        feed.setEventType(eventType);
+        feed.setOperation(operation);
+        feed.setEntityId(entity_id);
+
+        Long justAddedFeedId = insert(ADD_FEED_QUERY, userId, eventType.name(), operation.name(), entity_id);
+        feed.setEventId(justAddedFeedId);
+
+    }
+
+    public List<Feed> getFeedsByUserId(Long userId) {
+        return jdbc.query(FIND_FEEDS_QUERY, new FeedRowMapper(), userId);
     }
 }

@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.user.EventType;
+import ru.yandex.practicum.filmorate.model.user.Feed;
+import ru.yandex.practicum.filmorate.model.user.Operation;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -52,6 +55,8 @@ public class UserServiceImpl implements UserService {
         userStorage.renewUser(user);
 
         log.info("Пользователь с id {} добавил в друзья пользователя с id {}", id, friendId);
+
+        userStorage.addFeed(id, EventType.FRIEND, Operation.ADD, friendId);
         return returnUsersFriendsByUserId(id);
     }
 
@@ -70,6 +75,8 @@ public class UserServiceImpl implements UserService {
         user.getFriendsList().remove(friendId);
         userStorage.renewUser(user);
         log.info("Пользователь с id {} удалил из друзей пользователя с id {}", id, friendId);
+
+        userStorage.addFeed(id, EventType.FRIEND, Operation.REMOVE, friendId);
         return user;
     }
 
@@ -100,5 +107,9 @@ public class UserServiceImpl implements UserService {
         }
 
         return commonFriends;
+    }
+
+    public List<Feed> getFeedsByUserId(@PositiveOrZero(message = "id должен быть положительным") Long id) {
+        return userStorage.getFeedsByUserId(id);
     }
 }
