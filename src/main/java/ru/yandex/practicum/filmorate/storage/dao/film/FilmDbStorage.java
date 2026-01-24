@@ -79,9 +79,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_GENRES_QUERY = "SELECT * " +
                                                     "FROM genres";
 
-    private static final String CHECK_FRIENDSHIP_QUERY = "SELECT COUNT(*) FROM friends WHERE " +
-            "(user_id = ? AND friend_id = ?) ";
-
     private final UserStorage userStorage;
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper,
@@ -326,13 +323,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         User user1 = userStorage.returnUserById(userId);
         User user2 = userStorage.returnUserById(friendId);
-
-        Integer friendshipCount = jdbc.queryForObject(CHECK_FRIENDSHIP_QUERY, Integer.class,
-                userId, friendId);
-
-        if (friendshipCount == 0 || friendshipCount == null) {
-            throw new NotFoundException("Пользователи не являются друзьями друг для друга!");
-        }
 
         try {
             List<Long> commonFilmsIds = jdbc.query(FIND_COMMON_FILMS_QUERY, new FilmRowMapper(), userId, friendId)
