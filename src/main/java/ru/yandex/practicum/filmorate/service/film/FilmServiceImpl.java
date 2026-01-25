@@ -89,44 +89,14 @@ public class FilmServiceImpl implements FilmService {
             }
         };
 
-        List<Film> sortedFilmList;
-        if (count != null && genreId != null && year != null) {
-            sortedFilmList = filmStorage.returnFilmsList().stream()
-                    .sorted(userComparator.reversed())
-                    .filter(film -> film.getGenres().contains(getGenre(genreId)))
-                    .filter(film -> film.getReleaseDate().getYear() == year)
-                    .toList();
+        long limit = (count == null) ? 10 : count;
 
-        } else if (genreId == null && year == null) {
-            sortedFilmList = filmStorage.returnFilmsList().stream()
-                    .sorted(userComparator.reversed())
-                    .toList();
-        } else {
-            sortedFilmList = new ArrayList<>();
-        }
-
-        if (count == null) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            if (!sortedFilmList.isEmpty()) {
-                for (int i = 0; i < 10; i++) {
-                    listToReturn.add(sortedFilmList.get(i));
-                }
-            }
-
-            return listToReturn;
-
-        } else if (sortedFilmList.size() >= count) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < count; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-        } else {
-            return sortedFilmList;
-        }
+        return filmStorage.returnFilmsList().stream()
+                .sorted(userComparator.reversed())
+                .filter(film -> (genreId == null || film.getGenres().contains(getGenre(genreId)))
+                        && (year == null || film.getReleaseDate().getYear() == year))
+                .limit(limit)
+                .toList();
     }
 
     public List<Genre> getGenresList() {
