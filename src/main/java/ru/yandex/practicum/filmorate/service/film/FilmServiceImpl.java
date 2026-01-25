@@ -136,6 +136,8 @@ public class FilmServiceImpl implements FilmService {
         if (id <= 0) {
             throw new ValidationException("ID фильма должен быть положительным");
         }
+
         filmStorage.deleteFilm(id);
+        log.info("Фильм с id {} успешно удален", id);
     }
 }

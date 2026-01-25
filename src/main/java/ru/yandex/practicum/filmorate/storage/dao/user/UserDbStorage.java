@@ -149,11 +149,9 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     @Override
     public void deleteUser(long id) {
-        boolean wereRowsDeleted = delete(DELETE_USER_QUERY, id);
+        returnUserById(id);
 
-        if (!wereRowsDeleted) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден");
-        }
+        delete(DELETE_USER_QUERY, id);
 
         log.info("Пользователь с id {} успешно удален из базы данных", id);
     }

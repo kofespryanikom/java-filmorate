@@ -317,12 +317,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     @Override
     public void deleteFilm(long id) {
 
-        update(DELETE_FILM_GENRE_QUERY, id);
+        boolean wereRowsDeleted = delete(DELETE_FILM_QUERY, id);
 
-        boolean wereRowsDeleted = delete(DELETE_FILM_GENRE_QUERY, id);
-
-        if (!wereRowsDeleted) {
-            throw new NotFoundException("Фильм с id" + id + " не найден");
+        if (wereRowsDeleted) {
+            delete(DELETE_FILM_GENRE_QUERY, id);
+            log.info("Фильм с id {} и его жанры успешно удалены", id);
+        } else {
+            throw new NotFoundException("Фильм с id " + id + " не найден");
         }
 
         log.info("Фильм с id {} успешно удален из базы данных", id);

@@ -108,6 +108,8 @@ public class UserServiceImpl implements UserService {
         if (id <= 0) {
             throw new ValidationException("ID пользователя должен быть положительным");
         }
+
         userStorage.deleteUser(id);
+        log.info("Пользователь с id {} успешно удален", id);
     }
 }
