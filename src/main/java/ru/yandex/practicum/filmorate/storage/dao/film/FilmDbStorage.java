@@ -319,9 +319,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         returnFilmByID(id);
 
         update(DELETE_FILM_GENRE_QUERY, id);
-        update(DELETE_FILM_QUERY, id);
 
         update(DELETE_FILM_QUERY, id);
+
         log.info("Фильм с id {} успешно удален из базы данных", id);
     }
 }
