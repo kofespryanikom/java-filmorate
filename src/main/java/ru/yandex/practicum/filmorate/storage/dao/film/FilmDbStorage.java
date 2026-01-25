@@ -325,13 +325,12 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         User user2 = userStorage.returnUserById(friendId);
 
         try {
-            List<Long> commonFilmsIds = jdbc.query(FIND_COMMON_FILMS_QUERY, new FilmRowMapper(), userId, friendId)
+            List<Long> commonFilmsIds = findMany(FIND_COMMON_FILMS_QUERY, userId, friendId)
                     .stream()
                     .map(Film::getId).toList();
 
             return commonFilmsIds.stream()
                     .map(this::returnFilmByID)
-                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
         } catch (EmptyResultDataAccessException e) {

@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerErrorException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
@@ -27,7 +28,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_USER_QUERY = "SELECT * FROM users WHERE user_id = ?";
     private static final String DELETE_USER_FROM_FRIENDS_TABLE = "DELETE FROM friends WHERE user_id = ?";
     private static final String FIND_ALL_USERS_FRIENDS = "SELECT * " +
-                                                         "FROM friends ";
+                                                         "FROM friends";
     private static final String FIND_ALL_USER_FRIENDS = "SELECT * " +
                                                         "FROM friends " +
                                                         "WHERE user_id = ?";
@@ -46,9 +47,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             Long userId = userFriendDto.getUserId();
             Long friendId = userFriendDto.getFriendId();
             User user = uniqueUsersMap.get(userId);
-            if (user != null) {
-                user.getFriendsList().add(friendId);
-            }
+            user.getFriendsList().add(friendId);
         }
 
         return new ArrayList<>(uniqueUsersMap.values());
