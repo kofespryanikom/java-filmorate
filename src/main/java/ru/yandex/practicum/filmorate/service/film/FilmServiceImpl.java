@@ -124,9 +124,7 @@ public class FilmServiceImpl implements FilmService {
             }
 
             return listToReturn;
-        }
-
-        else {
+        } else {
             return sortedFilmList;
         }
     }
