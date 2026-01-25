@@ -75,4 +75,9 @@ public class FilmController {
     public Rating getRating(@PathVariable Integer id) {
         return filmService.getRating(id);
     }
+
+    @DeleteMapping("/films/{id}")
+    public void  deleteFilm(@PathVariable long id) {
+        filmService.deleteFilm(id);
+    }
 }

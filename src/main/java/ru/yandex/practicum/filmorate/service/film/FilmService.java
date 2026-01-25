@@ -34,4 +34,6 @@ public interface FilmService {
     List<Rating> getRatingsList();
 
     Rating getRating(@Positive(message = "id должен быть положительным") Integer id);
+
+    void deleteFilm(long id);
 }

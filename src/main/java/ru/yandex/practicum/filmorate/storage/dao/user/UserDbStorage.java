@@ -32,6 +32,8 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                                                         "FROM friends " +
                                                         "WHERE user_id = ?";
 
+    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
+
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
@@ -143,5 +145,13 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         if (rowsUpdated == 0) {
             throw new InternalServerErrorException("Не удалось обновить данные");
         }
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        returnUserById(id);
+
+        update(DELETE_USER_QUERY, id);
+        log.info("Пользователь с id {} успешно удален из базы данных", id);
     }
 }

@@ -65,4 +65,9 @@ public class UserController {
     public List<User> getCommonFriendsByOneUserIdAndOtherId(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getCommonFriendsByOneUserIdAndOtherId(id, otherId);
     }
+
+    @DeleteMapping("/{userId}")
+    public void  deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
+    }
 }

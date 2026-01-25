@@ -122,4 +122,12 @@ public class InMemoryFilmService implements FilmService {
     public Rating getRating(@Positive(message = "id должен быть положительным") Integer id) {
         return filmStorage.getRating(id);
     }
+
+    @Override
+    public void deleteFilm(long id) {
+        if (filmStorage.returnFilmByID(id) == null) {
+            throw new NotFoundException("Фильм с id " + id + " не найден.");
+        }
+        filmStorage.deleteFilm(id);
+    }
 }

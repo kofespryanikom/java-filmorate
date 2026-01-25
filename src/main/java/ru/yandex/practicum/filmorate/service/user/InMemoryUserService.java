@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -88,5 +89,13 @@ public class InMemoryUserService implements UserService {
         }
 
         return commonFriends;
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        if (userStorage.returnUserById(id) == null) {
+            throw new NotFoundException("Пользователь с id " + id + " не найден.");
+        }
+        userStorage.deleteUser(id);
     }
 }

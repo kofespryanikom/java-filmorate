@@ -101,4 +101,9 @@ public class UserServiceImpl implements UserService {
 
         return commonFriends;
     }
+
+    @Override
+    public void deleteUser(long id) {
+        userStorage.deleteUser(id);
+    }
 }

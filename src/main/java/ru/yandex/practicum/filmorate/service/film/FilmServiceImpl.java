@@ -129,4 +129,9 @@ public class FilmServiceImpl implements FilmService {
     public Rating getRating(@Positive(message = "id должен быть положительным") Integer id) {
         return filmStorage.getRating(id);
     }
+
+    @Override
+    public void deleteFilm(long id) {
+        filmStorage.deleteFilm(id);
+    }
 }
