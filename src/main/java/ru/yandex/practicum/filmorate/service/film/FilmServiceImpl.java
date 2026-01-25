@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -132,6 +133,9 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public void deleteFilm(long id) {
+        if (id <= 0) {
+            throw new ValidationException("ID фильма должен быть положительным");
+        }
         filmStorage.deleteFilm(id);
     }
 }

@@ -93,9 +93,7 @@ public class InMemoryUserService implements UserService {
 
     @Override
     public void deleteUser(long id) {
-        if (userStorage.returnUserById(id) == null) {
-            throw new NotFoundException("Пользователь с id " + id + " не найден.");
-        }
+        userStorage.returnUserById(id);
         userStorage.deleteUser(id);
     }
 }
