@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
