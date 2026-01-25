@@ -78,7 +78,9 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public List<Film> returnMostLikedFilmsInAmountOfCount(
-            @PositiveOrZero(message = "count не может быть отрицательным") Long count) {
+            @PositiveOrZero(message = "count не может быть отрицательным") Long count,
+            @PositiveOrZero(message = "count не может быть отрицательным") Integer genreId,
+            @PositiveOrZero(message = "count не может быть отрицательным") Integer year) {
 
         Comparator<Film> userComparator = new Comparator<>() {
             @Override
@@ -87,15 +89,29 @@ public class FilmServiceImpl implements FilmService {
             }
         };
 
-        List<Film> sortedFilmList = filmStorage.returnFilmsList().stream()
-                .sorted(userComparator.reversed())
-                .toList();
+        List<Film> sortedFilmList;
+        if (count != null && genreId != null && year != null) {
+            sortedFilmList = filmStorage.returnFilmsList().stream()
+                    .sorted(userComparator.reversed())
+                    .filter(film -> film.getGenres().contains(getGenre(genreId)))
+                    .filter(film -> film.getReleaseDate().getYear() == year)
+                    .toList();
+
+        } else if (genreId == null && year == null) {
+            sortedFilmList = filmStorage.returnFilmsList().stream()
+                    .sorted(userComparator.reversed())
+                    .toList();
+        } else {
+            sortedFilmList = new ArrayList<>();
+        }
 
         if (count == null) {
             List<Film> listToReturn = new ArrayList<>();
 
-            for (int i = 0; i < 10; i++) {
-                listToReturn.add(sortedFilmList.get(i));
+            if (!sortedFilmList.isEmpty()) {
+                for (int i = 0; i < 10; i++) {
+                    listToReturn.add(sortedFilmList.get(i));
+                }
             }
 
             return listToReturn;
@@ -108,8 +124,9 @@ public class FilmServiceImpl implements FilmService {
             }
 
             return listToReturn;
+        }
 
-        } else {
+        else {
             return sortedFilmList;
         }
     }
