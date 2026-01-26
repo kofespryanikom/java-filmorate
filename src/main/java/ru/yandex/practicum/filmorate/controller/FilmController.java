@@ -75,4 +75,10 @@ public class FilmController {
     public Rating getRating(@PathVariable Integer id) {
         return filmService.getRating(id);
     }
+
+    @GetMapping("/films/common")
+    public List<Film> getCommonFilms(@RequestParam Long userId,
+                                     @RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }

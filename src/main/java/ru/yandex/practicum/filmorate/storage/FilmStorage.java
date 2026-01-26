@@ -23,4 +23,6 @@ public interface FilmStorage {
     List<Rating> getRatingsList();
 
     Rating getRating(Integer id);
+
+    List<Film> getCommonFilms(Long userId, Long friendId);
 }
