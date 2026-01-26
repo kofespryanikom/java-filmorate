@@ -27,7 +27,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_USER_QUERY = "SELECT * FROM users WHERE user_id = ?";
     private static final String DELETE_USER_FROM_FRIENDS_TABLE = "DELETE FROM friends WHERE user_id = ?";
     private static final String FIND_ALL_USERS_FRIENDS = "SELECT * " +
-                                                         "FROM friends ";
+                                                         "FROM friends";
     private static final String FIND_ALL_USER_FRIENDS = "SELECT * " +
                                                         "FROM friends " +
                                                         "WHERE user_id = ?";
@@ -42,13 +42,13 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         List<User> uniqueUsers = findMany(FIND_ALL_USERS_QUERY);
         List<UserFriendDto> usersFriends = jdbc.query(FIND_ALL_USERS_FRIENDS, new FriendRowMapper());
         Map<Long, User> uniqueUsersMap = uniqueUsers.stream()
-                .collect(Collectors.toMap(user -> user.getId(), user -> user));
+                .collect(Collectors.toMap(User::getId, user -> user));
 
-        User userBeingCompleted;
         for (UserFriendDto userFriendDto : usersFriends) {
             Long userId = userFriendDto.getUserId();
-            userBeingCompleted = uniqueUsersMap.get(userId);
-            userBeingCompleted.getFriendsList().add(userFriendDto.getUserId());
+            Long friendId = userFriendDto.getFriendId();
+            User user = uniqueUsersMap.get(userId);
+            user.getFriendsList().add(friendId);
         }
 
         return new ArrayList<>(uniqueUsersMap.values());

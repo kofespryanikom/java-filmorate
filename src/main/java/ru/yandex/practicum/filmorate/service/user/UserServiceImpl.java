@@ -49,6 +49,11 @@ public class UserServiceImpl implements UserService {
             log.warn("Потенциальный друг с id {} не найден", friendId);
             throw new NotFoundException("Потенциальный друг с id " + friendId + " не найден");
         }
+
+        if (Objects.equals(id, friendId)) {
+            throw new IllegalArgumentException("Пользователь не может добавить в друзья сам себя!");
+        }
+
         user.getFriendsList().add(friendId);
         userStorage.renewUser(user);
 
