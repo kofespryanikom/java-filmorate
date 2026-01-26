@@ -114,7 +114,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Фильм с id " + id + " не найден.");
         }
     }
-  
+
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         return new ArrayList<>();
     }

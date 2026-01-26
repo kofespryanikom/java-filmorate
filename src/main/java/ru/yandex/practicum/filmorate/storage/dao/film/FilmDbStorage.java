@@ -336,7 +336,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         log.info("Фильм с id {} успешно удален из базы данных", id);
     }
-  
+
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         User user1 = userStorage.returnUserById(userId);
         User user2 = userStorage.returnUserById(friendId);
