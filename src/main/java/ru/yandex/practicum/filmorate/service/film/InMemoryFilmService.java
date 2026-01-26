@@ -123,6 +123,14 @@ public class InMemoryFilmService implements FilmService {
         return filmStorage.getRating(id);
     }
 
+    @Override
+    public void deleteFilm(long id) {
+        if (filmStorage.returnFilmByID(id) == null) {
+            throw new NotFoundException("Фильм с id " + id + " не найден.");
+        }
+        filmStorage.deleteFilm(id);
+    }
+
     public List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
                               @Positive(message = "id должен быть положительным") Long friendId) {
         return filmStorage.getCommonFilms(userId, friendId);

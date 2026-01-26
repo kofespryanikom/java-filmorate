@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -105,5 +106,15 @@ public class UserServiceImpl implements UserService {
         }
 
         return commonFriends;
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        if (id <= 0) {
+            throw new ValidationException("ID пользователя должен быть положительным");
+        }
+
+        userStorage.deleteUser(id);
+        log.info("Пользователь с id {} успешно удален", id);
     }
 }

@@ -79,6 +79,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_GENRES_QUERY = "SELECT * " +
                                                     "FROM genres";
 
+    private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
+
     private final UserStorage userStorage;
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper,
@@ -318,6 +320,21 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             log.warn("Множество лайкнувших пользователей в таблице пользователей не было найдено");
             throw new NotFoundException("Множество лайкнувших пользователей в таблице пользователей не было найдено");
         }
+    }
+
+    @Override
+    public void deleteFilm(long id) {
+
+        boolean wereRowsDeleted = delete(DELETE_FILM_QUERY, id);
+
+        if (wereRowsDeleted) {
+            delete(DELETE_FILM_GENRE_QUERY, id);
+            log.info("Фильм с id {} и его жанры успешно удалены", id);
+        } else {
+            throw new NotFoundException("Фильм с id " + id + " не найден");
+        }
+
+        log.info("Фильм с id {} успешно удален из базы данных", id);
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {

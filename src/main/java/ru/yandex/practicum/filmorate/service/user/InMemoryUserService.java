@@ -89,4 +89,10 @@ public class InMemoryUserService implements UserService {
 
         return commonFriends;
     }
+
+    @Override
+    public void deleteUser(long id) {
+        userStorage.returnUserById(id);
+        userStorage.deleteUser(id);
+    }
 }

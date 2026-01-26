@@ -130,6 +130,12 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getRating(id);
     }
 
+    @Override
+    public void deleteFilm(@Positive(message = "ID фильма должен быть положительным") long id) {
+        filmStorage.deleteFilm(id);
+        log.info("Фильм с id {} успешно удален", id);
+    }
+
     public List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
                                      @Positive(message = "id должен быть положительным") Long friendId) {
         return filmStorage.getCommonFilms(userId, friendId);
