@@ -78,8 +78,8 @@ public class FilmServiceImpl implements FilmService {
 
     public List<Film> returnMostLikedFilmsInAmountOfCount(
             @PositiveOrZero(message = "count не может быть отрицательным") Long count,
-            @PositiveOrZero(message = "count не может быть отрицательным") Integer genreId,
-            @PositiveOrZero(message = "count не может быть отрицательным") Integer year) {
+            @PositiveOrZero(message = "genreId не может быть отрицательным") Integer genreId,
+            @PositiveOrZero(message = "year не может быть отрицательным") Integer year) {
 
         Comparator<Film> userComparator = new Comparator<>() {
             @Override
