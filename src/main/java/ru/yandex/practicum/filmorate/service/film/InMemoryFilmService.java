@@ -71,7 +71,9 @@ public class InMemoryFilmService implements FilmService {
         return film;
     }
 
-    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count) {
+    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count,
+                                                          Integer genreId,
+                                                          Integer year) {
 
         Comparator<Film> userComparator = new Comparator<>() {
             @Override

@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -78,7 +77,9 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public List<Film> returnMostLikedFilmsInAmountOfCount(
-            @PositiveOrZero(message = "count не может быть отрицательным") Long count) {
+            @PositiveOrZero(message = "count не может быть отрицательным") Long count,
+            @PositiveOrZero(message = "genreId не может быть отрицательным") Integer genreId,
+            @PositiveOrZero(message = "year не может быть отрицательным") Integer year) {
 
         Comparator<Film> userComparator = new Comparator<>() {
             @Override
@@ -87,31 +88,14 @@ public class FilmServiceImpl implements FilmService {
             }
         };
 
-        List<Film> sortedFilmList = filmStorage.returnFilmsList().stream()
+        long limit = (count == null) ? 10 : count;
+
+        return filmStorage.returnFilmsList().stream()
                 .sorted(userComparator.reversed())
+                .filter(film -> (genreId == null || film.getGenres().contains(getGenre(genreId)))
+                        && (year == null || film.getReleaseDate().getYear() == year))
+                .limit(limit)
                 .toList();
-
-        if (count == null) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < 10; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-
-        } else if (sortedFilmList.size() >= count) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < count; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-
-        } else {
-            return sortedFilmList;
-        }
     }
 
     public List<Genre> getGenresList() {
