@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -48,6 +49,11 @@ public class UserServiceImpl implements UserService {
             log.warn("Потенциальный друг с id {} не найден", friendId);
             throw new NotFoundException("Потенциальный друг с id " + friendId + " не найден");
         }
+
+        if (Objects.equals(id, friendId)) {
+            throw new IllegalArgumentException("Пользователь не может добавить в друзья сам себя!");
+        }
+
         user.getFriendsList().add(friendId);
         userStorage.renewUser(user);
 
@@ -100,5 +106,15 @@ public class UserServiceImpl implements UserService {
         }
 
         return commonFriends;
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        if (id <= 0) {
+            throw new ValidationException("ID пользователя должен быть положительным");
+        }
+
+        userStorage.deleteUser(id);
+        log.info("Пользователь с id {} успешно удален", id);
     }
 }

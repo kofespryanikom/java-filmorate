@@ -94,4 +94,13 @@ public class InMemoryUserStorage implements UserStorage {
     public Map<Long, User> returnUsersMap() {
         return users;
     }
+
+    @Override
+    public void deleteUser(long id) {
+        if (users.containsKey(id)) {
+            users.remove(id);
+        } else {
+            throw new NotFoundException("Пользователь с id " + id + " не найден.");
+        }
+    }
 }

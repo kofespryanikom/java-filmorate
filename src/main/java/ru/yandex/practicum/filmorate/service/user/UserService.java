@@ -29,4 +29,6 @@ public interface UserService {
                                                      Long id,
                                                      @PositiveOrZero(message = "id должен быть положительным")
                                                      Long otherId);
+
+    void deleteUser(long id);
 }

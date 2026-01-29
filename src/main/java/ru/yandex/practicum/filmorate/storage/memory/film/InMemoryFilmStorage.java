@@ -105,4 +105,17 @@ public class InMemoryFilmStorage implements FilmStorage {
     public Rating getRating(Integer id) {
         return new Rating();
     }
+
+    @Override
+    public void deleteFilm(long id) {
+        if (films.containsKey(id)) {
+            films.remove(id);
+        } else {
+            throw new NotFoundException("Фильм с id " + id + " не найден.");
+        }
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return new ArrayList<>();
+    }
 }
