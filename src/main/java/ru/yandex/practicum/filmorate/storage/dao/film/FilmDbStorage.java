@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.dao.film;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -99,63 +98,15 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private final DirectorDbStorage directorStorage;
 
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        directorStorage.findById(directorId)
+                .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
+
         String query = sortBy.equals("year") ? FIND_BY_DIRECTOR_SORT_YEAR : FIND_BY_DIRECTOR_SORT_LIKES;
         List<Film> films = findMany(query, directorId);
 
-        if (films.isEmpty()) return  films;
-
-        Map<Long, Film> filmsMap = films.stream()
-                .collect(Collectors.toMap(Film::getId, film -> film));
-
-        List<Rating> allRatings = jdbc.query(FIND_RATINGS_QUERY, new RatingRowMapper());
-        List<Genre> allGenres = jdbc.query(FIND_GENRE_QUERY, new GenreRowMapper());
-
-        Map<Integer, Rating> ratingsMap = allRatings.stream()
-                .collect(Collectors.toMap(Rating::getId, rating -> rating));
-        Map<Integer, Genre> genresMap = allGenres.stream()
-                .collect(Collectors.toMap(Genre::getId, genre -> genre));
-
-        List<FilmLikeDto> likes = jdbc.query(FIND_ALL_FILMS_LIKES_QUERY, new FilmLikeRowMapper());
-        for (FilmLikeDto like : likes) {
-            if (filmsMap.containsKey(like.getFilmId())) {
-                filmsMap.get(like.getFilmId()).getUsersLiked().add(like.getUserLikedId());
-            }
-        }
-
-        List<FilmGenreDto> filmGenres = jdbc.query(FIND_ALL_FILMS_GENRES_QUERY, new FilmGenresRowMapper());
-        for (FilmGenreDto fg : filmGenres) {
-            if (filmsMap.containsKey(fg.getFilmId())) {
-                filmsMap.get(fg.getFilmId()).getGenres().add(genresMap.get(fg.getGenreId()));
-            }
-        }
-
-        Map<Integer, Director> directorMap = directorStorage.findAll().stream()
-                .collect(Collectors.toMap(Director::getId, director -> director));
-
-        List<FilmDirectorDto> filmDirectors = jdbc.query(
-                "SELECT film_id, director_id FROM film_directors",
-                (rs, rowNum) -> new FilmDirectorDto(rs.getLong("film_id"), rs.getInt("director_id")));
-
-        for (FilmDirectorDto fd : filmDirectors) {
-            if (filmsMap.containsKey(fd.getFilmId())) {
-                filmsMap.get(fd.getFilmId()).getDirectors().add(directorMap.get(fd.getDirectorId()));
-            }
-        }
-
-        for (Film film : films) {
-            Integer ratingId = film.getMpa().getId();
-            if (ratingsMap.containsKey(ratingId)) {
-                film.getMpa().setName(ratingsMap.get(ratingId).getName());
-            }
-        }
-
-        return films;
-    }
-
-    @Data
-    private static class FilmDirectorDto {
-        private final long filmId;
-        private final Integer directorId;
+        return films.stream()
+                .map(f -> returnFilmByID(f.getId()))
+                .collect(Collectors.toList());
     }
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper,
@@ -250,6 +201,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             update(addFilmLikeQuery, likesToBeAddedToTable.toArray(new Object[0]));
         }
 
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (Director director : film.getDirectors()) {
+                jdbc.update("INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)",
+                        justAddedFilmId, director.getId());
+            }
+        }
+
         film.setId(justAddedFilmId);
 
         log.info("Добавлен фильм: {}", name);
@@ -316,6 +274,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             update(addFilmLikeQuery, likesToBeAddedToTable.toArray(new Object[0]));
         }
 
+        jdbc.update("DELETE FROM film_directors WHERE film_id = ?", filmId);
+        if (film.getDirectors() != null && !film.getDirectors().isEmpty()) {
+            for (Director director : film.getDirectors()) {
+                jdbc.update("INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)",
+                        filmId, director.getId());
+            }
+        }
+
         log.info("Обновлен фильм: {}", name);
 
         return film;
@@ -336,6 +302,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         }
 
         Film filmToBeCompleted = film.get();
+
+        List<Director> directors = jdbc.query(
+                "SELECT d.* FROM directors d JOIN film_directors fd ON d.director_id = fd.director_id WHERE fd.film_id = ?",
+                new DirectorRowMapper(), id
+        );
+        filmToBeCompleted.setDirectors(new HashSet<>(directors));
+
         for (FilmLikeDto filmIdLikeObject : filmIdLikeObjects) {
             filmToBeCompleted.getUsersLiked().add(filmIdLikeObject.getUserLikedId());
         }
