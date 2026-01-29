@@ -39,6 +39,7 @@ public class DirectorDbStorage extends BaseRepository<Director> {
         if (id != null) {
             director.setId(id.intValue());
         }
+
         return director;
     }
 
