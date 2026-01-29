@@ -32,22 +32,27 @@ public class FilmServiceImpl implements FilmService {
         this.directorService = directorService;
     }
 
+    @Override
     public List<Film> returnFilmsList() {
         return filmStorage.returnFilmsList();
     }
 
+    @Override
     public Film returnFilmByID(@PositiveOrZero(message = "id должен быть положительным") Long id) {
         return filmStorage.returnFilmByID(id);
     }
 
+    @Override
     public Film addFilm(Film film) {
         return filmStorage.addFilm(film);
     }
 
+    @Override
     public Film renewFilm(Film film) {
         return filmStorage.renewFilm(film);
     }
 
+    @Override
     public Film addLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
                         @PositiveOrZero(message = "id должен быть положительным") Long userId) {
         if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
@@ -63,6 +68,7 @@ public class FilmServiceImpl implements FilmService {
         return film;
     }
 
+    @Override
     public Film deleteLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
                            @PositiveOrZero(message = "id должен быть положительным") Long userId) {
         if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
@@ -78,6 +84,7 @@ public class FilmServiceImpl implements FilmService {
         return film;
     }
 
+    @Override
     public List<Film> returnMostLikedFilmsInAmountOfCount(
             @PositiveOrZero(message = "count не может быть отрицательным") Long count,
             @PositiveOrZero(message = "genreId не может быть отрицательным") Integer genreId,
