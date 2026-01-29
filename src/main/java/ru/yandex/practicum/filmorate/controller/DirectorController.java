@@ -24,7 +24,7 @@ public class DirectorController {
         return directorService.findById(id);
     }
 
-    @PostMapping Director createDirector(@Valid @RequestBody Director director){
+    @PostMapping Director createDirector(@Valid @RequestBody Director director) {
         return directorService.createDirector(director);
     }
 
