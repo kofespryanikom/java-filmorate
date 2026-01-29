@@ -176,14 +176,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             }
         }
 
-        Long justAddedFilmId = insert(ADD_FILM_ROW_QUERY, name, description, releaseDate, duration.toMinutes(),
+        Number justAddedFilmId = insert(ADD_FILM_ROW_QUERY, name, description, releaseDate, duration.toMinutes(),
                 rating.getId());
 
         if (!genres.isEmpty()) {
             List<Long> genresToBeAddedToTable = new ArrayList<>();
             for (Genre genre : genres) {
                 addFilmGenreQuery += "(?, ?),";
-                genresToBeAddedToTable.add(justAddedFilmId);
+                genresToBeAddedToTable.add(justAddedFilmId.longValue());
                 genresToBeAddedToTable.add(genre.getId().longValue());
             }
             addFilmGenreQuery = addFilmGenreQuery.substring(0, addFilmGenreQuery.length() - 1);
@@ -195,7 +195,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             List<Long> likesToBeAddedToTable = new ArrayList<>();
             for (Long userId : usersLiked) {
                 addFilmLikeQuery += "(?, ?),";
-                likesToBeAddedToTable.add(justAddedFilmId);
+                likesToBeAddedToTable.add(justAddedFilmId.longValue());
                 likesToBeAddedToTable.add(userId);
             }
             addFilmLikeQuery = addFilmLikeQuery.substring(0, addFilmLikeQuery.length() - 1);
@@ -209,7 +209,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             }
         }
 
-        film.setId(justAddedFilmId);
+        film.setId(justAddedFilmId.longValue());
 
         log.info("Добавлен фильм: {}", name);
 
