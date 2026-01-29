@@ -71,7 +71,9 @@ public class InMemoryFilmService implements FilmService {
         return film;
     }
 
-    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count) {
+    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count,
+                                                          Integer genreId,
+                                                          Integer year) {
 
         Comparator<Film> userComparator = new Comparator<>() {
             @Override
@@ -131,8 +133,13 @@ public class InMemoryFilmService implements FilmService {
         filmStorage.deleteFilm(id);
     }
 
+    public List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
+                              @Positive(message = "id должен быть положительным") Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     @Override
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
-        return new ArrayList<>();
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }

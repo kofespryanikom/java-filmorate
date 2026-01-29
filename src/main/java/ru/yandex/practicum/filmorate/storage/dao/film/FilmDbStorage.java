@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -17,10 +18,7 @@ import ru.yandex.practicum.filmorate.service.film.DirectorService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
-import ru.yandex.practicum.filmorate.storage.dao.mapper.film.FilmGenresRowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.mapper.film.FilmLikeRowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.mapper.film.GenreRowMapper;
-import ru.yandex.practicum.filmorate.storage.dao.mapper.film.RatingRowMapper;
+import ru.yandex.practicum.filmorate.storage.dao.mapper.film.*;
 import ru.yandex.practicum.filmorate.storage.dto.film.FilmGenreDto;
 import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
@@ -61,6 +59,16 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                                                         "FROM films f " +
                                                         "JOIN users_liked ul ON f.film_id = ul.film_id " +
                                                         "WHERE f.film_id = ?";
+
+    private static final String FIND_COMMON_FILMS_QUERY = "SELECT f.*, COUNT(DISTINCT ul_all.user_id) as like_count " +
+                                                            "FROM films f " +
+                                                            "JOIN users_liked ul ON ul.film_id = f.film_id " +
+                                                            "LEFT JOIN users_liked ul_all ON ul_all.film_id = f.film_id " +
+                                                            "WHERE ul.user_id IN (?, ?) " +
+                                                            "GROUP BY f.film_id, f.name, f.description, f.release_date, f.duration, f.rating_id " +
+                                                            "HAVING COUNT(DISTINCT ul.user_id) = 2 " +
+                                                            "ORDER BY like_count DESC; ";
+
     private static final String FIND_GENRE_QUERY = "SELECT * " +
                                                    "FROM genres " +
                                                    "WHERE genre_id = ?";
@@ -148,7 +156,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         private final Integer directorId;
     }
 
-    private UserStorage userStorage;
+    private final UserStorage userStorage;
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper,
                          @Qualifier("UserDbStorage") UserStorage userStorage, DirectorService directorService) {
@@ -403,5 +411,23 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         }
 
         log.info("Фильм с id {} успешно удален из базы данных", id);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        User user1 = userStorage.returnUserById(userId);
+        User user2 = userStorage.returnUserById(friendId);
+
+        try {
+            List<Long> commonFilmsIds = findMany(FIND_COMMON_FILMS_QUERY, userId, friendId)
+                    .stream()
+                    .map(Film::getId).toList();
+
+            return commonFilmsIds.stream()
+                    .map(this::returnFilmByID)
+                    .collect(Collectors.toList());
+
+        } catch (EmptyResultDataAccessException e) {
+            return Collections.emptyList();
+        }
     }
 }

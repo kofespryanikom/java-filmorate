@@ -25,7 +25,7 @@ public interface FilmService {
                     @PositiveOrZero(message = "id должен быть положительным") Long userId);
 
     List<Film> returnMostLikedFilmsInAmountOfCount(
-            @PositiveOrZero(message = "count не может быть отрицательным") Long count);
+            @PositiveOrZero(message = "count не может быть отрицательным") Long count, Integer genreId, Integer year);
 
     List<Genre> getGenresList();
 
@@ -38,4 +38,7 @@ public interface FilmService {
     void deleteFilm(long id);
 
     List<Film> getFilmsByDirector(Integer directorId, String sortBy);
+
+    List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
+                              @Positive(message = "id должен быть положительным") Long friendId);
 }

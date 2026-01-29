@@ -7,14 +7,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -81,7 +79,9 @@ public class FilmServiceImpl implements FilmService {
     }
 
     public List<Film> returnMostLikedFilmsInAmountOfCount(
-            @PositiveOrZero(message = "count не может быть отрицательным") Long count) {
+            @PositiveOrZero(message = "count не может быть отрицательным") Long count,
+            @PositiveOrZero(message = "genreId не может быть отрицательным") Integer genreId,
+            @PositiveOrZero(message = "year не может быть отрицательным") Integer year) {
 
         Comparator<Film> userComparator = new Comparator<>() {
             @Override
@@ -90,41 +90,27 @@ public class FilmServiceImpl implements FilmService {
             }
         };
 
-        List<Film> sortedFilmList = filmStorage.returnFilmsList().stream()
+        long limit = (count == null) ? 10 : count;
+
+        return filmStorage.returnFilmsList().stream()
                 .sorted(userComparator.reversed())
+                .filter(film -> (genreId == null || film.getGenres().contains(getGenre(genreId)))
+                        && (year == null || film.getReleaseDate().getYear() == year))
+                .limit(limit)
                 .toList();
-
-        if (count == null) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < 10; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-
-        } else if (sortedFilmList.size() >= count) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < count; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-
-        } else {
-            return sortedFilmList;
-        }
     }
 
+    @Override
     public List<Genre> getGenresList() {
         return filmStorage.getGenresList();
     }
 
+    @Override
     public Genre getGenre(@Positive(message = "id должен быть положительным") Integer id) {
         return filmStorage.getGenre(id);
     }
 
+    @Override
     public List<Rating> getRatingsList() {
         return filmStorage.getRatingsList();
     }
@@ -134,15 +120,18 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public void deleteFilm(long id) {
-        if (id <= 0) {
-            throw new ValidationException("ID фильма должен быть положительным");
-        }
-
+    public void deleteFilm(@Positive(message = "ID фильма должен быть положительным") long id) {
         filmStorage.deleteFilm(id);
         log.info("Фильм с id {} успешно удален", id);
     }
 
+    @Override
+    public List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
+                                     @Positive(message = "id должен быть положительным") Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    @Override
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
         directorService.findById(directorId);
 
