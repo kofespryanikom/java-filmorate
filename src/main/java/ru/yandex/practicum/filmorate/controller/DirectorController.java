@@ -28,7 +28,11 @@ public class DirectorController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Director createDirector(@Valid @RequestBody Director director) {
-        return directorService.createDirector(director);
+        try {
+            return directorService.createDirector(director);
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     @PutMapping
