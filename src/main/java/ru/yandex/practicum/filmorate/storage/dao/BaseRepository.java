@@ -5,6 +5,7 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import ru.yandex.practicum.filmorate.exception.InternalServerErrorException;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -51,6 +52,12 @@ public class BaseRepository<T> {
 
         }, keyHolder);
 
-        return keyHolder.getKeyAs(Number.class);
+        Number id = keyHolder.getKeyAs(Number.class);
+
+        if (id != null) {
+            return id;
+        } else {
+            throw new InternalServerErrorException("Не удалось сохранить данные");
+        }
     }
 }

@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public Director createDirector(Director director) {
+    public Director createDirector(@Valid Director director) {
         log.info("Добавление нового режиссера: {} ", director.getName());
         return  directorStorage.createDirector(director);
     }
