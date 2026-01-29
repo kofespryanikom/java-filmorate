@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
 import java.util.List;
 import java.util.Optional;
 
-@Repository("DirectorDbStorage")
+@Repository
 public class DirectorDbStorage extends BaseRepository<Director> {
     private static final String FIND_ALL = "SELECT * FROM directors";
     private static final String FIND_BY_ID = "SELECT * FROM directors WHERE director_id = ?";

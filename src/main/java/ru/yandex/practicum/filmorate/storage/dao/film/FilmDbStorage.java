@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
 import ru.yandex.practicum.filmorate.model.user.User;
-import ru.yandex.practicum.filmorate.service.film.DirectorService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
@@ -30,6 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository("FilmDbStorage")
 public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
+
     private static final String FIND_ALL_UNIQUE_FILMS_ROWS_QUERY = "SELECT * " +
                                                                    "FROM films ";
     private static final String FIND_ALL_FILMS_GENRES_QUERY = "SELECT f.film_id, fg.genre_id " +
@@ -94,7 +94,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     "LEFT JOIN users_liked ul ON f.film_id = ul.film_id " +
                     "WHERE fd.director_id = ? " +
                     "GROUP BY f.film_id ORDER BY likes DESC";
-    private final DirectorService directorService;
+
+    private final UserStorage userStorage;
+    private final DirectorDbStorage directorStorage;
 
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
         String query = sortBy.equals("year") ? FIND_BY_DIRECTOR_SORT_YEAR : FIND_BY_DIRECTOR_SORT_LIKES;
@@ -127,7 +129,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             }
         }
 
-        Map<Integer, Director> directorMap = directorService.findAll().stream()
+        Map<Integer, Director> directorMap = directorStorage.findAll().stream()
                 .collect(Collectors.toMap(Director::getId, director -> director));
 
         List<FilmDirectorDto> filmDirectors = jdbc.query(
@@ -156,13 +158,11 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         private final Integer directorId;
     }
 
-    private final UserStorage userStorage;
-
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper,
-                         @Qualifier("UserDbStorage") UserStorage userStorage, DirectorService directorService) {
+                         @Qualifier("UserDbStorage") UserStorage userStorage, DirectorDbStorage directorStorage) {
         super(jdbc, mapper);
         this.userStorage = userStorage;
-        this.directorService = directorService;
+        this.directorStorage = directorStorage;
     }
 
     public List<Film> returnFilmsList() {
@@ -198,6 +198,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         return new ArrayList<>(uniqueFilmsMap.values());
     }
 
+    @Override
     public Film addFilm(Film film) {
         String addFilmGenreQuery = "INSERT INTO film_genres " +
                                    "(film_id, genre_id) " +
@@ -256,6 +257,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         return film;
     }
 
+    @Override
     public Film renewFilm(Film film) {
         String addFilmGenreQuery = "INSERT INTO film_genres " +
                                    "(film_id, genre_id) " +
