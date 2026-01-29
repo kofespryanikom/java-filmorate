@@ -71,7 +71,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_GENRES_QUERY = "SELECT * " +
                                                     "FROM genres";
 
-    private UserStorage userStorage;
+    private final UserStorage userStorage;
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper,
                          @Qualifier("UserDbStorage") UserStorage userStorage) {
