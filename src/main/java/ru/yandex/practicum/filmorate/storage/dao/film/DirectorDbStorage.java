@@ -35,8 +35,10 @@ public class DirectorDbStorage extends BaseRepository<Director> {
     }
 
     public Director createDirector(Director director) {
-        long id = insert(INSERT, director.getName());
-        director.setId((int) id);
+        Number id = insert(INSERT, director.getName());
+        if (id != null) {
+            director.setId(id.intValue());
+        }
         return director;
     }
 
