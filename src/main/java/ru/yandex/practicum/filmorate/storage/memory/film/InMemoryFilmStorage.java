@@ -114,4 +114,9 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new NotFoundException("Фильм с id " + id + " не найден.");
         }
     }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        return new ArrayList<>();
+    }
 }

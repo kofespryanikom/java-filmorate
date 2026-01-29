@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao.film;
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -7,10 +8,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
 import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.service.film.DirectorService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
@@ -73,12 +76,85 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
 
+    private static final String FIND_BY_DIRECTOR_SORT_YEAR = "SELECT f.* FROM films f " +
+                                                             "JOIN film_directors fd ON f.film_id = fd.film_id " +
+                                                             "WHERE fd.director_id = ? ORDER BY f.release_date";
+
+    private static final String FIND_BY_DIRECTOR_SORT_LIKES =
+                    "SELECT f.*, COUNT(ul.user_id) as likes FROM films f " +
+                    "JOIN film_directors fd ON f.film_id = fd.film_id " +
+                    "LEFT JOIN users_liked ul ON f.film_id = ul.film_id " +
+                    "WHERE fd.director_id = ? " +
+                    "GROUP BY f.film_id ORDER BY likes DESC";
+    private final DirectorService directorService;
+
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        String query = sortBy.equals("year") ? FIND_BY_DIRECTOR_SORT_YEAR : FIND_BY_DIRECTOR_SORT_LIKES;
+        List<Film> films = findMany(query, directorId);
+
+        if (films.isEmpty()) return  films;
+
+        Map<Long, Film> filmsMap = films.stream()
+                .collect(Collectors.toMap(Film::getId, film -> film));
+
+        List<Rating> allRatings = jdbc.query(FIND_RATINGS_QUERY, new RatingRowMapper());
+        List<Genre> allGenres = jdbc.query(FIND_GENRE_QUERY, new GenreRowMapper());
+
+        Map<Integer, Rating> ratingsMap = allRatings.stream()
+                .collect(Collectors.toMap(Rating::getId, rating -> rating));
+        Map<Integer, Genre> genresMap = allGenres.stream()
+                .collect(Collectors.toMap(Genre::getId, genre -> genre));
+
+        List<FilmLikeDto> likes = jdbc.query(FIND_ALL_FILMS_LIKES_QUERY, new FilmLikeRowMapper());
+        for (FilmLikeDto like : likes) {
+            if (filmsMap.containsKey(like.getFilmId())) {
+                filmsMap.get(like.getFilmId()).getUsersLiked().add(like.getUserLikedId());
+            }
+        }
+
+        List<FilmGenreDto> filmGenres = jdbc.query(FIND_ALL_FILMS_GENRES_QUERY, new FilmGenresRowMapper());
+        for (FilmGenreDto fg : filmGenres) {
+            if (filmsMap.containsKey(fg.getFilmId())) {
+                filmsMap.get(fg.getFilmId()).getGenres().add(genresMap.get(fg.getGenreId()));
+            }
+        }
+
+        Map<Integer, Director> directorMap = directorService.findAll().stream()
+                .collect(Collectors.toMap(Director::getId, director -> director));
+
+        List<FilmDirectorDto> filmDirectors = jdbc.query(
+                "SELECT film_id, director_id FROM film_directors",
+                (rs, rowNum) -> new FilmDirectorDto(rs.getLong("film_id"), rs.getInt("director_id")));
+
+        for (FilmDirectorDto fd : filmDirectors) {
+            if (filmsMap.containsKey(fd.getFilmId())) {
+                filmsMap.get(fd.getFilmId()).getDirectors().add(directorMap.get(fd.getDirectorId()));
+            }
+        }
+
+        for (Film film : films) {
+            Integer ratingId = film.getMpa().getId();
+            if (ratingsMap.containsKey(ratingId)) {
+                film.getMpa().setName(ratingsMap.get(ratingId).getName());
+            }
+        }
+
+        return films;
+    }
+
+    @Data
+    private static class FilmDirectorDto {
+        private final long filmId;
+        private final Integer directorId;
+    }
+
     private UserStorage userStorage;
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper,
-                         @Qualifier("UserDbStorage") UserStorage userStorage) {
+                         @Qualifier("UserDbStorage") UserStorage userStorage, DirectorService directorService) {
         super(jdbc, mapper);
         this.userStorage = userStorage;
+        this.directorService = directorService;
     }
 
     public List<Film> returnFilmsList() {

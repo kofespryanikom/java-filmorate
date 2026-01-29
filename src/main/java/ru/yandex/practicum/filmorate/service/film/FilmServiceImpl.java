@@ -25,11 +25,13 @@ public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorService directorService;
 
     public FilmServiceImpl(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
-                           @Qualifier("UserDbStorage") UserStorage userStorage) {
+                           @Qualifier("UserDbStorage") UserStorage userStorage, DirectorService directorService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorService = directorService;
     }
 
     public List<Film> returnFilmsList() {
@@ -139,5 +141,12 @@ public class FilmServiceImpl implements FilmService {
 
         filmStorage.deleteFilm(id);
         log.info("Фильм с id {} успешно удален", id);
+    }
+
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        directorService.findById(directorId);
+
+        log.info("Запрошены фильмы режиссера с id {} с сортировкой по {}", directorId, sortBy);
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }

@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
-@Service
+@Service("InMemoryFilmService")
 @Validated
 public class InMemoryFilmService implements FilmService {
 
@@ -129,5 +129,10 @@ public class InMemoryFilmService implements FilmService {
             throw new NotFoundException("Фильм с id " + id + " не найден.");
         }
         filmStorage.deleteFilm(id);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        return new ArrayList<>();
     }
 }
