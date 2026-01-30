@@ -24,7 +24,6 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewStorage.returnReviewById(reviewId);
 
         review.setUseful(review.getUseful() + 1);
-        review.setIsPositive(review.getUseful() > 0);
 
         reviewStorage.renewUsefulPointsCount(review);
         reviewStorage.addReviewReaction(reviewId, userId, true);
@@ -39,7 +38,6 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewStorage.returnReviewById(reviewId);
 
         review.setUseful(review.getUseful() - 1);
-        review.setIsPositive(review.getUseful() > 0);
 
         reviewStorage.renewUsefulPointsCount(review);
         reviewStorage.addReviewReaction(reviewId, userId, false);
@@ -65,7 +63,6 @@ public class ReviewServiceImpl implements ReviewService {
                 review.setUseful(review.getUseful() + 1);
             }
 
-            review.setIsPositive(review.getUseful() > 0);
             reviewStorage.renewUsefulPointsCount(review);
         }
     }

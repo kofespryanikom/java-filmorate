@@ -30,7 +30,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                                                       "useful = ? " +
                                                       "WHERE review_id = ?";
     private static final String UPDATE_USEFUL_IN_REVIEWS_TABLE_QUERY = "UPDATE reviews SET " +
-                                                                       "is_positive = ?, useful = ? " +
+                                                                       "useful = ? " +
                                                                        "WHERE review_id = ?";
     private static final String DELETE_REVIEW_QUERY = "DELETE FROM reviews WHERE review_id = ?";
     private static final String FIND_REVIEW_QUERY = "SELECT * " +
@@ -106,9 +106,8 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     public void renewUsefulPointsCount(Review review) {
         Long reviewId = review.getReviewId();
         Long useful = review.getUseful();
-        boolean isPositive = review.getIsPositive();
 
-        update(UPDATE_USEFUL_IN_REVIEWS_TABLE_QUERY, isPositive, useful, reviewId);
+        update(UPDATE_USEFUL_IN_REVIEWS_TABLE_QUERY, useful, reviewId);
     }
 
     public void deleteReview(Long reviewId) {
