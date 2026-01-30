@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.dao.film;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.InternalServerErrorException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
@@ -36,10 +37,10 @@ public class DirectorDbStorage extends BaseRepository<Director> {
 
     public Director createDirector(Director director) {
         Number id = insert(INSERT, director.getName());
-        if (id != null) {
-            director.setId(id.intValue());
+        if (id == null) {
+            throw new InternalServerErrorException("Не удалось получить id от базы");
         }
-
+        director.setId(id.intValue());
         return director;
     }
 

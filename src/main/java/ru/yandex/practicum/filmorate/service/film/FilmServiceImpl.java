@@ -1,11 +1,8 @@
 package ru.yandex.practicum.filmorate.service.film;
 
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -18,7 +15,6 @@ import java.util.List;
 
 @Slf4j
 @Service("FilmServiceImpl")
-@Validated
 public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
@@ -38,7 +34,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Film returnFilmByID(@PositiveOrZero(message = "id должен быть положительным") Long id) {
+    public Film returnFilmByID(Long id) {
         return filmStorage.returnFilmByID(id);
     }
 
@@ -53,8 +49,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Film addLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                        @PositiveOrZero(message = "id должен быть положительным") Long userId) {
+    public Film addLike(Long id, Long userId) {
         if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
             throw new NotFoundException("Такого пользователя не существует");
         }
@@ -69,8 +64,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Film deleteLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                           @PositiveOrZero(message = "id должен быть положительным") Long userId) {
+    public Film deleteLike(Long id, Long userId) {
         if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
             throw new NotFoundException("Такого пользователя не существует");
         }
@@ -85,17 +79,9 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> returnMostLikedFilmsInAmountOfCount(
-            @PositiveOrZero(message = "count не может быть отрицательным") Long count,
-            @PositiveOrZero(message = "genreId не может быть отрицательным") Integer genreId,
-            @PositiveOrZero(message = "year не может быть отрицательным") Integer year) {
+    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count, Integer genreId, Integer year) {
 
-        Comparator<Film> userComparator = new Comparator<>() {
-            @Override
-            public int compare(Film film1, Film film2) {
-                return film1.getUsersLiked().size() - film2.getUsersLiked().size();
-            }
-        };
+        Comparator<Film> userComparator = (film1, film2) -> film1.getUsersLiked().size() - film2.getUsersLiked().size();
 
         long limit = (count == null) ? 10 : count;
 
@@ -113,7 +99,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public Genre getGenre(@Positive(message = "id должен быть положительным") Integer id) {
+    public Genre getGenre(Integer id) {
         return filmStorage.getGenre(id);
     }
 
@@ -122,19 +108,18 @@ public class FilmServiceImpl implements FilmService {
         return filmStorage.getRatingsList();
     }
 
-    public Rating getRating(@Positive(message = "id должен быть положительным") Integer id) {
+    public Rating getRating(Integer id) {
         return filmStorage.getRating(id);
     }
 
     @Override
-    public void deleteFilm(@Positive(message = "ID фильма должен быть положительным") long id) {
+    public void deleteFilm(long id) {
         filmStorage.deleteFilm(id);
         log.info("Фильм с id {} успешно удален", id);
     }
 
     @Override
-    public List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
-                                     @Positive(message = "id должен быть положительным") Long friendId) {
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
         return filmStorage.getCommonFilms(userId, friendId);
     }
 

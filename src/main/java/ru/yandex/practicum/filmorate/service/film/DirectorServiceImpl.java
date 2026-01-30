@@ -1,10 +1,10 @@
 package ru.yandex.practicum.filmorate.service.film;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.storage.dao.film.DirectorDbStorage;
 
@@ -30,7 +30,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public Director createDirector(@Valid Director director) {
+    public Director createDirector(Director director) {
         log.info("Добавление нового режиссера: {} ", director.getName());
         return  directorStorage.createDirector(director);
     }
@@ -46,5 +46,11 @@ public class DirectorServiceImpl implements DirectorService {
     public void deleteDirector(Integer id) {
         log.info("Удаление режиссера с id {} ", id);
         directorStorage.deleteDirector(id);
+    }
+
+    private void validateDirector(Director director) {
+        if (director.getName() == null || director.getName().isBlank()) {
+            throw new ValidationException("Имя режиссера не может быть пустым");
+        }
     }
 }
