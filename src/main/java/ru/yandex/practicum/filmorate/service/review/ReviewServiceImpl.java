@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.review.Review;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@Transactional
 @Validated
 @RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
