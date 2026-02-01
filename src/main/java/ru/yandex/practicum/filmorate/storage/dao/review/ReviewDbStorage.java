@@ -39,10 +39,12 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     private static final String FIND_REVIEWS_BY_FILM_ID_QUERY = "SELECT * " +
                                                                 "FROM reviews " +
                                                                 "WHERE film_id = ? " +
-                                                                "ORDER BY useful DESC";
+                                                                "ORDER BY useful DESC " +
+                                                                "LIMIT ?";
     private static final String FIND_ALL_REVIEWS_QUERY = "SELECT * " +
                                                          "FROM reviews " +
-                                                         "ORDER BY useful DESC";
+                                                         "ORDER BY useful DESC" +
+                                                         "LIMIT ?";
     private static final String ADD_REVIEW_REACTION_QUERY = "INSERT INTO reviews_reactions " +
                                                             "(review_id, user_id, is_positive) " +
                                                             "VALUES (?, ?, ?)";
@@ -129,19 +131,9 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         List<Review> reviewsList;
 
         if (filmId != null) {
-            if (count != null) {
-                String findReviewsByFilmIdWithLimit = FIND_REVIEWS_BY_FILM_ID_QUERY + " LIMIT " + count;
-                reviewsList = findMany(findReviewsByFilmIdWithLimit, filmId);
-            } else {
-                reviewsList = findMany(FIND_REVIEWS_BY_FILM_ID_QUERY, filmId);
-            }
+            reviewsList = findMany(FIND_REVIEWS_BY_FILM_ID_QUERY, filmId, count);
         } else {
-            if (count != null) {
-                String findAllReviewsWithLimit = FIND_ALL_REVIEWS_QUERY + " LIMIT " + count;
-                reviewsList = findMany(findAllReviewsWithLimit);
-            } else {
-                reviewsList = findMany(FIND_ALL_REVIEWS_QUERY);
-            }
+            reviewsList = findMany(FIND_ALL_REVIEWS_QUERY, count);
         }
 
         return reviewsList;
