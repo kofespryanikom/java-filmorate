@@ -31,7 +31,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_USER_QUERY = "SELECT * FROM users WHERE user_id = ?";
     private static final String DELETE_USER_FROM_FRIENDS_TABLE = "DELETE FROM friends WHERE user_id = ?";
     private static final String FIND_ALL_USERS_FRIENDS = "SELECT * " +
-                                                         "FROM friends ";
+                                                         "FROM friends";
     private static final String FIND_ALL_USER_FRIENDS = "SELECT * " +
                                                         "FROM friends " +
                                                         "WHERE user_id = ?";
@@ -40,6 +40,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             "VALUES (CURRENT_TIMESTAMP, ?, ?, ?, ?)";
 
     private static final String FIND_FEEDS_QUERY = "SELECT * FROM feed WHERE user_id = ? ORDER BY timestamp DESC";
+    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -55,9 +56,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             Long userId = userFriendDto.getUserId();
             Long friendId = userFriendDto.getFriendId();
             User user = uniqueUsersMap.get(userId);
-            if (user != null) {
-                user.getFriendsList().add(friendId);
-            }
+            user.getFriendsList().add(friendId);
         }
 
         return new ArrayList<>(uniqueUsersMap.values());
@@ -167,6 +166,15 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         Long justAddedFeedId = insert(ADD_FEED_QUERY, userId, eventType.name(), operation.name(), entity_id);
         feed.setEventId(justAddedFeedId);
 
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        returnUserById(id);
+
+        delete(DELETE_USER_QUERY, id);
+
+        log.info("Пользователь с id {} успешно удален из базы данных", id);
     }
 
     public List<Feed> getFeedsByUserId(Long userId) {

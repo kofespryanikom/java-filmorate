@@ -22,5 +22,7 @@ public interface UserStorage {
 
     List<Feed> getFeedsByUserId(Long userId);
 
+    void deleteUser(long id);
+
     void addFeed(Long userId, EventType eventType, Operation operation, Long entity_id);
 }

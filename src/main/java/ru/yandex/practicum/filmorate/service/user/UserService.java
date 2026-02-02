@@ -32,4 +32,5 @@ public interface UserService {
                                                      Long otherId);
 
     List<Feed> getFeedsByUserId(@PositiveOrZero(message = "id должен быть положительным") Long id);
+    void deleteUser(long id);
 }

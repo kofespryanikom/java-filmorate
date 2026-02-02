@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -66,6 +64,11 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriendsByOneUserIdAndOtherId(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getCommonFriendsByOneUserIdAndOtherId(id, otherId);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void  deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
     }
 
     @GetMapping("/{id}/feed")
