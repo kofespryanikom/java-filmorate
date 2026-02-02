@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.model.user.Feed;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 

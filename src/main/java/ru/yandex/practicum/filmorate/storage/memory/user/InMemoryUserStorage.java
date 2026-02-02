@@ -98,14 +98,13 @@ public class InMemoryUserStorage implements UserStorage {
         return users;
     }
 
-<<<<<<< HEAD
     public List<Feed> getFeedsByUserId(Long userId) {
         return new ArrayList<>();
     }
 
-    public void addFeed(Long userId, EventType eventType, Operation operation, Long entity_id) {
+    public void addFeed(Long userId, EventType eventType, Operation operation, Long entityId) {
+    }
 
-=======
     @Override
     public void deleteUser(long id) {
         if (users.containsKey(id)) {
@@ -113,6 +112,5 @@ public class InMemoryUserStorage implements UserStorage {
         } else {
             throw new NotFoundException("Пользователь с id " + id + " не найден.");
         }
->>>>>>> develop
     }
 }

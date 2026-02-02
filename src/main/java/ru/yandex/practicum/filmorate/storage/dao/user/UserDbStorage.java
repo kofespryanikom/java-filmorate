@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.storage.dao.mapper.user.FeedRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.user.FriendRowMapper;
 import ru.yandex.practicum.filmorate.storage.dto.user.UserFriendDto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -37,9 +38,9 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                                                         "WHERE user_id = ?";
 
     private static final String ADD_FEED_QUERY = "INSERT INTO feed (timestamp, user_id, event_type, operation, entity_id) " +
-            "VALUES (CURRENT_TIMESTAMP, ?, ?, ?, ?)";
+            "VALUES (?, ?, ?, ?, ?)";
 
-    private static final String FIND_FEEDS_QUERY = "SELECT * FROM feed WHERE user_id = ? ORDER BY timestamp DESC";
+    private static final String FIND_FEEDS_QUERY = "SELECT * FROM feed WHERE user_id = ? ORDER BY timestamp ASC";
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
@@ -155,15 +156,18 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         }
     }
 
-    public void addFeed(Long userId, EventType eventType, Operation operation, Long entity_id) {
+    public void addFeed(Long userId, EventType eventType, Operation operation, Long entityId) {
         Feed feed = new Feed();
 
+        long currentTimestamp = Instant.now().toEpochMilli();
+
+        feed.setTimestamp(currentTimestamp);
         feed.setUserId(userId);
         feed.setEventType(eventType);
         feed.setOperation(operation);
-        feed.setEntityId(entity_id);
+        feed.setEntityId(entityId);
 
-        Long justAddedFeedId = insert(ADD_FEED_QUERY, userId, eventType.name(), operation.name(), entity_id);
+        Long justAddedFeedId = insert(ADD_FEED_QUERY, currentTimestamp, userId, eventType.name(), operation.name(), entity_id);
         feed.setEventId(justAddedFeedId);
 
     }

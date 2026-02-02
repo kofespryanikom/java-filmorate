@@ -24,5 +24,5 @@ public interface UserStorage {
 
     void deleteUser(long id);
 
-    void addFeed(Long userId, EventType eventType, Operation operation, Long entity_id);
+    void addFeed(Long userId, EventType eventType, Operation operation, Long entityId);
 }
