@@ -167,7 +167,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         feed.setOperation(operation);
         feed.setEntityId(entityId);
 
-        Long justAddedFeedId = insert(ADD_FEED_QUERY, currentTimestamp, userId, eventType.name(), operation.name(), entity_id);
+        Long justAddedFeedId = insert(ADD_FEED_QUERY, currentTimestamp, userId, eventType.name(), operation.name(), entityId);
         feed.setEventId(justAddedFeedId);
 
     }
