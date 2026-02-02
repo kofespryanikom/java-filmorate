@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.film.Film;
@@ -11,7 +10,6 @@ import ru.yandex.practicum.filmorate.service.film.FilmService;
 
 import java.util.List;
 
-@Slf4j
 @RestController
 public class FilmController {
 
