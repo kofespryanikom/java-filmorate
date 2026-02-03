@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
+import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
 import java.util.List;
 
@@ -27,4 +28,6 @@ public interface FilmStorage {
     void deleteFilm(long id);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
+
+    List<FilmLikeDto> getAllFilmsLikes();
 }

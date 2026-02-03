@@ -31,7 +31,6 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_ALL_USER_FRIENDS = "SELECT * " +
                                                         "FROM friends " +
                                                         "WHERE user_id = ?";
-
     private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {

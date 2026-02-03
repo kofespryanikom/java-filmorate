@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.user;
 
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -7,8 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
 import java.util.*;
 
@@ -18,9 +22,12 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
-    public UserServiceImpl(@Qualifier("UserDbStorage") UserStorage userStorage) {
+    public UserServiceImpl(@Qualifier("UserDbStorage") UserStorage userStorage,
+                           @Qualifier("FilmDbStorage") FilmStorage filmStorage) {
         this.userStorage = userStorage;
+        this.filmStorage = filmStorage;
     }
 
     public List<User> returnUsersList() {
@@ -116,5 +123,52 @@ public class UserServiceImpl implements UserService {
 
         userStorage.deleteUser(id);
         log.info("Пользователь с id {} успешно удален", id);
+    }
+
+    @Override
+    public List<Film> returnRecommendedFilmsList(@Positive Long userId) {
+        List<FilmLikeDto> allLikes = filmStorage.getAllFilmsLikes();
+
+        List<Long> filmsThatConsideredUserLiked = allLikes.stream()
+                .filter(filmLike -> filmLike.getUserLikedId().equals(userId))
+                .map(FilmLikeDto::getFilmId)
+                .toList();
+
+        Map<Long, Integer> matchesCount = new HashMap<>();
+        for (FilmLikeDto filmLike : allLikes) {
+            if (filmsThatConsideredUserLiked.contains(filmLike.getFilmId())) {
+                if (matchesCount.containsKey(filmLike.getUserLikedId())) {
+                    matchesCount.put(filmLike.getUserLikedId(), matchesCount.get(filmLike.getUserLikedId()) + 1);
+                } else {
+                    matchesCount.put(filmLike.getUserLikedId(), 1);
+                }
+            }
+        }
+
+        int maxMatchesCount = matchesCount.values().stream()
+                .max(Integer::compare).orElse(0);
+
+        List<Long> usersWithBestMatch = new ArrayList<>();
+        for (Map.Entry<Long, Integer> filmLike : matchesCount.entrySet()) {
+            if (filmLike.getValue() == maxMatchesCount) {
+                usersWithBestMatch.add(filmLike.getKey());
+            }
+        }
+
+        List<Long> recommendedFilmsIds = new ArrayList<>();
+        for (Long userWithBestMatch : usersWithBestMatch) {
+            List<Long> userFilmsToRecommend = allLikes.stream()
+                    .filter(filmLike -> filmLike.getUserLikedId().equals(userWithBestMatch) &&
+                            !filmsThatConsideredUserLiked.contains(filmLike.getFilmId()))
+                    .map(FilmLikeDto::getFilmId)
+                    .toList();
+            recommendedFilmsIds.addAll(userFilmsToRecommend);
+        }
+
+        List<Film> allFilms = filmStorage.returnFilmsList();
+        List<Film> recommendedFilmsList = allFilms.stream()
+                .filter(film -> recommendedFilmsIds.contains(film.getId()))
+                .toList();
+        return recommendedFilmsList;
     }
 }

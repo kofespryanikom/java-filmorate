@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
+import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -116,6 +117,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<FilmLikeDto> getAllFilmsLikes() {
         return new ArrayList<>();
     }
 }

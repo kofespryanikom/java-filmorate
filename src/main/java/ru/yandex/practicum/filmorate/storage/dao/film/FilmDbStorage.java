@@ -33,9 +33,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                                                               "FROM films f " +
                                                               "JOIN film_genres fg " +
                                                               "ON f.film_id = fg.film_id";
-    private static final String FIND_ALL_FILMS_LIKES_QUERY = "SELECT f.film_id, ul.user_id " +
-                                                             "FROM films f " +
-                                                             "JOIN users_liked ul ON f.film_id = ul.film_id";
+    private static final String FIND_ALL_FILMS_LIKES_QUERY = "SELECT film_id, user_id " +
+                                                             "FROM users_liked";
     private static final String ADD_FILM_ROW_QUERY = "INSERT INTO films " +
                                                      "(name, description, release_date, duration, rating_id) " +
                                                      "VALUES (?, ?, ?, ?, ?)";
@@ -52,10 +51,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                                                          "JOIN film_genres fg " +
                                                          "ON f.film_id = fg.film_id " +
                                                          "WHERE f.film_id = ?";
-    private static final String FIND_FILM_LIKES_QUERY = "SELECT f.film_id, ul.user_id " +
-                                                        "FROM films f " +
-                                                        "JOIN users_liked ul ON f.film_id = ul.film_id " +
-                                                        "WHERE f.film_id = ?";
+    private static final String FIND_FILM_LIKES_QUERY = "SELECT film_id, user_id " +
+                                                        "FROM users_liked " +
+                                                        "WHERE film_id = ?";
 
     private static final String FIND_COMMON_FILMS_QUERY = "SELECT f.*, COUNT(DISTINCT ul_all.user_id) as like_count " +
                                                             "FROM films f " +
@@ -353,5 +351,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             return Collections.emptyList();
         }
+    }
+
+    @Override
+    public List<FilmLikeDto> getAllFilmsLikes() {
+        return jdbc.query(FIND_ALL_FILMS_LIKES_QUERY, new FilmLikeRowMapper());
     }
 }
