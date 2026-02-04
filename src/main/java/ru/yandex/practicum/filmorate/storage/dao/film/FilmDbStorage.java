@@ -90,12 +90,13 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "ORDER BY f.release_date ASC";
 
     private static final String FIND_BY_DIRECTOR_SORT_LIKES =
-            "SELECT f.film_id FROM films f " +
-            "JOIN film_directors fd ON f.film_id = fd.film_id " +
+            "SELECT f.film_id " +
+            "FROM films f " +
             "LEFT JOIN users_liked ul ON f.film_id = ul.film_id " +
+            "JOIN film_directors fd ON f.film_id = fd.film_id " +
             "WHERE fd.director_id = ? " +
             "GROUP BY f.film_id " +
-            "ORDER BY COUNT(ul.user_id) DESC, f.release_date DESC, f.film_id ASC";
+            "ORDER BY COUNT(ul.user_id) DESC";
 
     private final UserStorage userStorage;
     private final DirectorDbStorage directorStorage;
