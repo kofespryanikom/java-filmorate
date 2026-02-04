@@ -40,7 +40,7 @@ public class BaseRepository<T> {
         return rowsUpdated > 0;
     }
 
-    protected Number insert(String query, Object... params) {
+    protected Long insert(String query, Object... params) {
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
         jdbc.update(connection -> {
             PreparedStatement ps = connection
@@ -55,7 +55,7 @@ public class BaseRepository<T> {
         Number id = keyHolder.getKeyAs(Number.class);
 
         if (id != null) {
-            return id;
+            return id.longValue();
         } else {
             throw new InternalServerErrorException("Не удалось сохранить данные");
         }

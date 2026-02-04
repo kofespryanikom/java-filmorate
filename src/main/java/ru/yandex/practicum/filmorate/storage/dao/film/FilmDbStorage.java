@@ -214,14 +214,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             }
         }
 
-        Number justAddedFilmId = insert(ADD_FILM_ROW_QUERY,
+        Long justAddedFilmId = insert(ADD_FILM_ROW_QUERY,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration().toMinutes(),
                 film.getMpa().getId());
 
-        long filmId = justAddedFilmId.longValue();
+        long filmId = justAddedFilmId;
         film.setId(filmId);
 
         batchInsertGenres(film);

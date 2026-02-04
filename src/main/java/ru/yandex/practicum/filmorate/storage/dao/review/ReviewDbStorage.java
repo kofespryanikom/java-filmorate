@@ -81,7 +81,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         Long filmId = review.getFilmId();
         Long useful = review.getUseful();
 
-        Long reviewId = insert(ADD_REVIEW_QUERY, content, isPositive, userId, filmId, useful).longValue();
+        Long reviewId = insert(ADD_REVIEW_QUERY, content, isPositive, userId, filmId, useful);
         review.setReviewId(reviewId);
         log.info("Отзыв с id {} добавлен", reviewId);
 
