@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.dao.film;
 
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -7,6 +8,7 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Repository("FilmDbStorage")
+@Validated
 public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     private static final String FIND_ALL_UNIQUE_FILMS_ROWS_QUERY = "SELECT * FROM films ORDER BY film_id";
@@ -108,7 +111,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+    public List<Film> getFilmsByDirector(@Positive Integer directorId, String sortBy) {
         directorStorage.findById(directorId)
                 .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
 
@@ -404,7 +407,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         log.info("Фильм с id {} успешно удален из базы данных", id);
     }
 
-    public List<Film> getCommonFilms(Long userId, Long friendId) {
+    public List<Film> getCommonFilms(@Positive Long userId, @Positive Long friendId) {
         userStorage.returnUserById(userId);
         userStorage.returnUserById(friendId);
 

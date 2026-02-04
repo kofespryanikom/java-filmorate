@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import jakarta.validation.constraints.Positive;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
@@ -14,7 +15,7 @@ public interface FilmStorage {
 
     Film renewFilm(Film film);
 
-    Film returnFilmByID(Long id);
+    Film returnFilmByID(@Positive Long id);
 
     List<Genre> getGenresList();
 
@@ -24,9 +25,9 @@ public interface FilmStorage {
 
     Rating getRating(Integer id);
 
-    void deleteFilm(long id);
+    void deleteFilm(@Positive long id);
 
-    List<Film> getCommonFilms(Long userId, Long friendId);
+    List<Film> getCommonFilms(@Positive Long userId, @Positive Long friendId);
 
-    List<Film> getFilmsByDirector(Integer directorId, String sortBy);
+    List<Film> getFilmsByDirector(@Positive Integer directorId, String sortBy);
 }
