@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public Director findById(Integer id) {
+    public Director findById(@Positive Integer id) {
         log.info("Запрошен режиссер с id {} ", id);
         return directorStorage.findById(id)
                 .orElseThrow(() -> new NotFoundException("Режиссер с id " + id + " не найден"));
@@ -43,7 +44,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public void deleteDirector(Integer id) {
+    public void deleteDirector(@Positive Integer id) {
         log.info("Удаление режиссера с id {} ", id);
         directorStorage.deleteDirector(id);
     }

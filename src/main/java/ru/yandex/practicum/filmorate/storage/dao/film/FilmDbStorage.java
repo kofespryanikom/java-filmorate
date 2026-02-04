@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.dao.film;
 
-import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -8,7 +7,6 @@ import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
@@ -30,7 +28,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Repository("FilmDbStorage")
-@Validated
 public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     private static final String FIND_ALL_UNIQUE_FILMS_ROWS_QUERY = "SELECT * FROM films ORDER BY film_id";
@@ -111,7 +108,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsByDirector(@Positive Integer directorId, String sortBy) {
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
         directorStorage.findById(directorId)
                 .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
 
@@ -207,15 +204,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         checkHasRatingIdNotFoundException(film.getMpa().getId());
-
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            List<Integer> genresIdsInDb = jdbc.queryForList(FIND_GENRES_IDS_QUERY, Integer.class);
-            for (Genre genre : film.getGenres()) {
-                if (!genresIdsInDb.contains(genre.getId())) {
-                    throw new NotFoundException("Жанр с id " + genre.getId() + " не найден");
-                }
-            }
-        }
+        checkGenresExists(film.getGenres());
 
         Long justAddedFilmId = insert(ADD_FILM_ROW_QUERY,
                 film.getName(),
@@ -239,11 +228,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public Film renewFilm(Film film) {
         Long filmId = film.getId();
 
-        try {
-            getRating(film.getMpa().getId());
-        } catch (NotFoundException e) {
-            throw new NotFoundException("Рейтинг не найден");
-        }
+        checkHasRatingIdNotFoundException(film.getMpa().getId());
+        checkGenresExists(film.getGenres());
 
         boolean wereRowsUpdated = update(UPDATE_FILM_ROW_QUERY,
                 film.getName(),
@@ -261,15 +247,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         jdbc.update(DELETE_FILM_GENRE_QUERY, filmId);
         jdbc.update(DELETE_FILM_LIKE_QUERY, filmId);
         jdbc.update(DELETE_FILM_DIRECTORS_QUERY, filmId);
-
-        if (film.getGenres() != null && !film.getGenres().isEmpty()) {
-            List<Integer> genresIds = jdbc.queryForList(FIND_GENRES_IDS_QUERY, Integer.class);
-            for (Genre genre : film.getGenres()) {
-                if (!genresIds.contains(genre.getId())) {
-                    throw new NotFoundException("Жанр с id " + genre.getId() + " не найден");
-                }
-            }
-        }
 
         if (film.getUsersLiked() != null && !film.getUsersLiked().isEmpty()) {
             checkIsUsersLikedSetInUsersDb(film.getUsersLiked());
@@ -392,6 +369,24 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         }
     }
 
+    private void checkGenresExists(Set<Genre> genres) {
+        if (genres == null || genres.isEmpty()) return;
+
+        List<Integer> ids = genres.stream().map(Genre::getId).collect(Collectors.toList());
+
+        String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
+
+        Integer count = jdbc.queryForObject(
+                String.format("SELECT COUNT(*) FROM genres WHERE genre_id IN (%s)", inSql),
+                Integer.class,
+                ids.toArray()
+        );
+
+        if (count == null || count != ids.size()) {
+            throw new NotFoundException("Один или несколько жанров не найдены");
+        }
+    }
+
     @Override
     public void deleteFilm(long id) {
 
@@ -407,7 +402,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         log.info("Фильм с id {} успешно удален из базы данных", id);
     }
 
-    public List<Film> getCommonFilms(@Positive Long userId, @Positive Long friendId) {
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
         userStorage.returnUserById(userId);
         userStorage.returnUserById(friendId);
 

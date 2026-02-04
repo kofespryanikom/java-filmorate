@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.service.film;
 
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -15,6 +17,7 @@ import java.util.List;
 
 @Slf4j
 @Service("FilmServiceImpl")
+@Validated
 public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
@@ -50,13 +53,10 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film addLike(Long id, Long userId) {
-        if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
+        userStorage.returnUserById(userId);
 
         Film film = returnFilmByID(id);
         film.getUsersLiked().add(userId);
-
         filmStorage.renewFilm(film);
 
         log.info("Добавлен лайк фильму с id {} от пользователя с id {}", id, userId);
