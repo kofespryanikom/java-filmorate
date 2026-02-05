@@ -3,6 +3,9 @@ package ru.yandex.practicum.filmorate.storage.memory.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.user.EventType;
+import ru.yandex.practicum.filmorate.model.user.Feed;
+import ru.yandex.practicum.filmorate.model.user.Operation;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -93,6 +96,13 @@ public class InMemoryUserStorage implements UserStorage {
 
     public Map<Long, User> returnUsersMap() {
         return users;
+    }
+
+    public List<Feed> getFeedsByUserId(Long userId) {
+        return new ArrayList<>();
+    }
+
+    public void addFeed(Long userId, EventType eventType, Operation operation, Long entityId) {
     }
 
     @Override

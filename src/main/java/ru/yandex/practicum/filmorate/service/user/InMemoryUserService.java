@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.user.Feed;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -100,6 +101,11 @@ public class InMemoryUserService implements UserService {
 
     @Override
     public List<Film> returnRecommendedFilmsList(@Positive Long userId) {
+        return new ArrayList<>();
+    }
+
+    public List<Feed> getFeedsByUserId(@PositiveOrZero(message = "id должен быть положительным")
+                                      Long id) {
         return new ArrayList<>();
     }
 }

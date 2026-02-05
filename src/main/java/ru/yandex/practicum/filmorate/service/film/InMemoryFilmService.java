@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
-@Service
+@Service("InMemoryFilmService")
 @Validated
 public class InMemoryFilmService implements FilmService {
 
@@ -136,5 +136,10 @@ public class InMemoryFilmService implements FilmService {
     public List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
                               @Positive(message = "id должен быть положительным") Long friendId) {
         return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }
