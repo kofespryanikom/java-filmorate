@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service("UserServiceImpl")
@@ -129,13 +130,15 @@ public class UserServiceImpl implements UserService {
     public List<Film> returnRecommendedFilmsList(@Positive Long userId) {
         List<FilmLikeDto> allLikes = filmStorage.getAllFilmsLikes();
 
-        List<Long> filmsThatConsideredUserLiked = allLikes.stream()
+        Set<Long> filmsThatConsideredUserLiked = allLikes.stream()
                 .filter(filmLike -> filmLike.getUserLikedId().equals(userId))
                 .map(FilmLikeDto::getFilmId)
-                .toList();
+                .collect(Collectors.toSet());
 
         Map<Long, Integer> matchesCount = new HashMap<>();
         for (FilmLikeDto filmLike : allLikes) {
+            if (filmLike.getUserLikedId().equals(userId)) continue;
+
             if (filmsThatConsideredUserLiked.contains(filmLike.getFilmId())) {
                 if (matchesCount.containsKey(filmLike.getUserLikedId())) {
                     matchesCount.put(filmLike.getUserLikedId(), matchesCount.get(filmLike.getUserLikedId()) + 1);
@@ -165,10 +168,6 @@ public class UserServiceImpl implements UserService {
             recommendedFilmsIds.addAll(userFilmsToRecommend);
         }
 
-        List<Film> allFilms = filmStorage.returnFilmsList();
-        List<Film> recommendedFilmsList = allFilms.stream()
-                .filter(film -> recommendedFilmsIds.contains(film.getId()))
-                .toList();
-        return recommendedFilmsList;
+        return filmStorage.returnFilmsListByIDs(recommendedFilmsIds);
     }
 }

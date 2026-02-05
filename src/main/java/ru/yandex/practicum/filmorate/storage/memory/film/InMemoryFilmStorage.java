@@ -124,4 +124,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<FilmLikeDto> getAllFilmsLikes() {
         return new ArrayList<>();
     }
+
+    @Override
+    public List<Film> returnFilmsListByIDs(List<Long> filmsIds) {
+        return new ArrayList<>();
+    }
 }

@@ -76,7 +76,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                                                      "FROM rating";
     private static final String FIND_GENRES_QUERY = "SELECT * " +
                                                     "FROM genres";
-
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private final UserStorage userStorage;
@@ -356,5 +355,21 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     @Override
     public List<FilmLikeDto> getAllFilmsLikes() {
         return jdbc.query(FIND_ALL_FILMS_LIKES_QUERY, new FilmLikeRowMapper());
+    }
+
+    @Override
+    public List<Film> returnFilmsListByIDs(List<Long> filmsIds) {
+        if (!filmsIds.isEmpty()) {
+            String returnFilmsByIdsQuery = FIND_ALL_UNIQUE_FILMS_ROWS_QUERY + "WHERE film_id IN (";
+            for (Long filmId : filmsIds) {
+                returnFilmsByIdsQuery += "?,";
+            }
+            returnFilmsByIdsQuery = returnFilmsByIdsQuery.substring(0, returnFilmsByIdsQuery.length() - 1)
+                    .concat(")");
+
+            return findMany(returnFilmsByIdsQuery, filmsIds.toArray(new Object[0]));
+        } else {
+            return new ArrayList<>();
+        }
     }
 }
