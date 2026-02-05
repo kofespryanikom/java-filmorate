@@ -140,11 +140,8 @@ public class UserServiceImpl implements UserService {
             if (filmLike.getUserLikedId().equals(userId)) continue;
 
             if (filmsThatConsideredUserLiked.contains(filmLike.getFilmId())) {
-                if (matchesCount.containsKey(filmLike.getUserLikedId())) {
-                    matchesCount.put(filmLike.getUserLikedId(), matchesCount.get(filmLike.getUserLikedId()) + 1);
-                } else {
-                    matchesCount.put(filmLike.getUserLikedId(), 1);
-                }
+                matchesCount.put(filmLike.getUserLikedId(),
+                        matchesCount.getOrDefault(filmLike.getUserLikedId(), 0) + 1);
             }
         }
 
