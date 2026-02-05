@@ -1,10 +1,9 @@
 package ru.yandex.practicum.filmorate.service.user;
 
-import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.user.EventType;
 import ru.yandex.practicum.filmorate.model.user.Feed;
@@ -17,7 +16,6 @@ import java.util.*;
 
 @Slf4j
 @Service("UserServiceImpl")
-@Validated
 public class UserServiceImpl implements UserService {
 
     private final UserStorage userStorage;
@@ -26,27 +24,31 @@ public class UserServiceImpl implements UserService {
         this.userStorage = userStorage;
     }
 
+    @Override
     public List<User> returnUsersList() {
         return userStorage.returnUsersList();
     }
 
-    public User returnUserById(@PositiveOrZero(message = "id должен быть положительным") Long id) {
+    @Override
+    public User returnUserById(@Positive Long id) {
         return userStorage.returnUserById(id);
     }
 
+    @Override
     public User addUser(User user) {
         return userStorage.addUser(user);
     }
 
+    @Override
     public User renewUser(User user) {
         return userStorage.renewUser(user);
     }
 
-    public Set<User> addFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                                             @PositiveOrZero(message = "id должен быть положительным") Long friendId) {
+    @Override
+    public Set<User> addFriendByUserIdAndFriendId(@Positive Long id, @Positive Long friendId) {
         User user = returnUserById(id);
         List<User> allExistingUsers = userStorage.returnUsersList();
-        List<Long> allExistingUsersIds = allExistingUsers.stream().map(u -> u.getId()).toList();
+        List<Long> allExistingUsersIds = allExistingUsers.stream().map(User::getId).toList();
 
         if (!allExistingUsersIds.contains(friendId)) {
             log.warn("Потенциальный друг с id {} не найден", friendId);
@@ -66,12 +68,11 @@ public class UserServiceImpl implements UserService {
         return returnUsersFriendsByUserId(id);
     }
 
-    public User deleteFriendByUserIdAndFriendId(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                                                @PositiveOrZero(message = "id должен быть положительным")
-                                                Long friendId) {
+    @Override
+    public User deleteFriendByUserIdAndFriendId(@Positive Long id, @Positive Long friendId) {
         User user = returnUserById(id);
         List<User> allExistingUsers = userStorage.returnUsersList();
-        List<Long> allExistingUsersIds = allExistingUsers.stream().map(u -> u.getId()).toList();
+        List<Long> allExistingUsersIds = allExistingUsers.stream().map(User::getId).toList();
 
         if (!allExistingUsersIds.contains(friendId)) {
             log.warn("Пользователь с id {} не найден", friendId);
@@ -86,7 +87,8 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
-    public Set<User> returnUsersFriendsByUserId(@PositiveOrZero(message = "id должен быть положительным") Long id) {
+    @Override
+    public Set<User> returnUsersFriendsByUserId(@Positive Long id) {
         List<Long> friendsIds = returnUserById(id).getFriendsList();
         Map<Long, User> allUsersMap = userStorage.returnUsersMap();
         Set<User> friendsSetAsUsersSet = new HashSet<>();
@@ -97,10 +99,8 @@ public class UserServiceImpl implements UserService {
         return friendsSetAsUsersSet;
     }
 
-    public List<User> getCommonFriendsByOneUserIdAndOtherId(@PositiveOrZero(message = "id должен быть положительным")
-                                                            Long id,
-                                                            @PositiveOrZero(message = "id должен быть положительным")
-                                                            Long otherId) {
+    @Override
+    public List<User> getCommonFriendsByOneUserIdAndOtherId(@Positive Long id, @Positive Long otherId) {
         User user = returnUserById(id);
         User otherFriend = returnUserById(otherId);
         Map<Long, User> allUsersMap = userStorage.returnUsersMap();
@@ -116,7 +116,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(long id) {
+    public void deleteUser(@Positive long id) {
         if (id <= 0) {
             throw new ValidationException("ID пользователя должен быть положительным");
         }

@@ -72,8 +72,8 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
             name = login;
         }
 
-        Long justAddedUserId = insert(ADD_USER_QUERY, email, login, name, birthdayDate);
-        user.setId(justAddedUserId);
+        Number justAddedUserId = insert(ADD_USER_QUERY, email, login, name, birthdayDate);
+        user.setId(justAddedUserId.longValue());
 
         log.info("Добавлен пользователь: {}", name);
 

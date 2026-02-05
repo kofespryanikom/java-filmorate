@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
@@ -12,22 +11,20 @@ public interface FilmService {
 
     List<Film> returnFilmsList();
 
-    Film returnFilmByID(@PositiveOrZero(message = "id должен быть положительным") Long id);
+    Film returnFilmByID(@Positive(message = "id должен быть положительным") Long id);
 
     Film addFilm(Film film);
 
     Film renewFilm(Film film);
 
-    Film addLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                 @PositiveOrZero(message = "id должен быть положительным") Long userId);
+    Film addLike(@Positive(message = "id должен быть положительным") Long id,
+                 @Positive(message = "id должен быть положительным") Long userId);
 
-    Film deleteLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                    @PositiveOrZero(message = "id должен быть положительным") Long userId);
+    Film deleteLike(@Positive(message = "id должен быть положительным") Long id,
+                    @Positive(message = "id должен быть положительным") Long userId);
 
     List<Film> returnMostLikedFilmsInAmountOfCount(
-            @PositiveOrZero(message = "count не может быть отрицательным") Long count,
-            @PositiveOrZero(message = "genreId не может быть отрицательным") Integer genreId,
-            @PositiveOrZero(message = "year не может быть отрицательным") Integer year);
+            @Positive(message = "count не может быть отрицательным") Long count, Integer genreId, Integer year);
 
     List<Genre> getGenresList();
 
@@ -37,7 +34,9 @@ public interface FilmService {
 
     Rating getRating(@Positive(message = "id должен быть положительным") Integer id);
 
-    void deleteFilm(@Positive(message = "ID фильма должен быть положительным") long id);
+    void deleteFilm(long id);
+
+    List<Film> getFilmsByDirector(Integer directorId, String sortBy);
 
     List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
                               @Positive(message = "id должен быть положительным") Long friendId);
