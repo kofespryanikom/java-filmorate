@@ -142,4 +142,9 @@ public class InMemoryFilmService implements FilmService {
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
+        return new ArrayList<>();
+    }
 }

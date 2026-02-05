@@ -123,4 +123,9 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
         return new ArrayList<>();
     }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
+        return new ArrayList<>();
+    }
 }

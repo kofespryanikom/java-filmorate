@@ -32,6 +32,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     private static final String FIND_ALL_UNIQUE_FILMS_ROWS_QUERY = "SELECT * FROM films ORDER BY film_id";
 
+    private static final String FIND_ALL_FILMS = "SELECT * FROM films f ";
     private static final String FIND_ALL_FILMS_GENRES_QUERY =
             "SELECT f.film_id, fg.genre_id " +
             "FROM films f JOIN film_genres fg ON f.film_id = fg.film_id";
@@ -422,5 +423,50 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         Map<Long, Film> filmMap = enrichedFilms.stream().collect(Collectors.toMap(Film::getId, Function.identity()));
 
         return commonFilmsIds.stream().map(filmMap::get).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
+        final String titleCondition = " WHERE f.name LIKE ? ";
+        final String directorCondition = " LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+                "WHERE d.name LIKE ? ";
+        final String titleAndDirectorCondition = " LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
+                "LEFT JOIN directors d ON fd.director_id = d.director_id " +
+                "WHERE (f.name LIKE ? OR d.name LIKE ?) ";
+
+        List<Film> searchedFilms = new ArrayList<>();
+        String searchPattern = "%" + query + "%";
+
+        try {
+            switch (by) {
+                case "title" -> {
+                    searchedFilms = jdbc.query(
+                            FIND_ALL_FILMS + titleCondition,
+                            new FilmRowMapper(),
+                            searchPattern
+                    );
+                }
+                case "director" -> {
+                    searchedFilms =  jdbc.query(
+                            FIND_ALL_FILMS + directorCondition,
+                            new FilmRowMapper(),
+                            searchPattern
+                    );
+                }
+                case "director,title", "title,director" -> {
+                    searchedFilms =  jdbc.query(
+                            FIND_ALL_FILMS + titleAndDirectorCondition,
+                            new FilmRowMapper(),
+                            searchPattern,
+                            searchPattern
+                    );
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e);
+        }
+
+        return searchedFilms.stream().map(film -> returnFilmByID(film.getId())).toList();
     }
 }
