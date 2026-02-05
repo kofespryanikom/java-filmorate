@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import ru.yandex.practicum.filmorate.model.user.Feed;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -94,5 +95,10 @@ public class InMemoryUserService implements UserService {
     public void deleteUser(long id) {
         userStorage.returnUserById(id);
         userStorage.deleteUser(id);
+    }
+
+    public List<Feed> getFeedsByUserId(@PositiveOrZero(message = "id должен быть положительным")
+                                      Long id) {
+        return new ArrayList<>();
     }
 }

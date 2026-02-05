@@ -8,6 +8,8 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.review.Review;
+import ru.yandex.practicum.filmorate.model.user.EventType;
+import ru.yandex.practicum.filmorate.model.user.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -83,6 +85,8 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
         Long reviewId = insert(ADD_REVIEW_QUERY, content, isPositive, userId, filmId, useful);
         review.setReviewId(reviewId);
+
+        userStorage.addFeed(userId, EventType.REVIEW, Operation.ADD, reviewId);
         log.info("Отзыв с id {} добавлен", reviewId);
 
         return review;
@@ -100,6 +104,8 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         Long useful = review.getUseful();
 
         update(UPDATE_REVIEW_QUERY, content, isPositive, userId, filmId, useful, reviewId);
+
+        userStorage.addFeed(userId, EventType.REVIEW, Operation.UPDATE, reviewId);
         log.info("Отзыв с id {} обновлен", reviewId);
 
         return review;
@@ -113,7 +119,10 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
     }
 
     public void deleteReview(Long reviewId) {
+        Long userId = returnReviewById(reviewId).getUserId();
+
         delete(DELETE_REVIEW_QUERY, reviewId);
+        userStorage.addFeed(userId, EventType.REVIEW, Operation.REMOVE, reviewId);
     }
 
     public Review returnReviewById(Long reviewId) {

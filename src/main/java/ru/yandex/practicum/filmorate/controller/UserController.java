@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.user.Feed;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
@@ -67,5 +68,10 @@ public class UserController {
     @DeleteMapping("/{userId}")
     public void  deleteUser(@PathVariable Long userId) {
         userService.deleteUser(userId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Feed> getFeedsByUserId(@PathVariable Long id) {
+        return userService.getFeedsByUserId(id);
     }
 }
