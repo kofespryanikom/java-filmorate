@@ -1,6 +1,8 @@
 package ru.yandex.practicum.filmorate.service.user;
 
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.user.Feed;
 import ru.yandex.practicum.filmorate.model.user.User;
 
@@ -34,4 +36,6 @@ public interface UserService {
     List<Feed> getFeedsByUserId(@PositiveOrZero(message = "id должен быть положительным") Long id);
 
     void deleteUser(long id);
+
+    List<Film> returnRecommendedFilmsList(@Positive Long userId);
 }
