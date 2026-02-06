@@ -91,6 +91,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 "GROUP BY f.film_id " +
                 "ORDER BY COUNT(ul.user_id) DESC, f.release_date DESC, f.film_id ASC";
 
+    private static final String FIND_ALL_FILMS = "SELECT * FROM films f ";
+
     private final UserStorage userStorage;
     private final DirectorDbStorage directorStorage;
 
@@ -429,7 +431,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 "WHERE (f.name LIKE ? OR d.name LIKE ?) ";
 
         Comparator<Film> likeComparator = (film1, film2) -> film1.getUsersLiked().size() - film2.getUsersLiked().size();
-        List<Film> searchedFilms = new ArrayList<>();
+        List<Film> searchedFilms;
         String searchPattern = "%" + query + "%";
 
         if (by.equals("title")) {
@@ -459,8 +461,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 .map(film -> returnFilmByID(film.getId()))
                 .sorted(likeComparator.reversed())
                 .toList();
-      }
-  
+    }
+
     public List<FilmLikeDto> getAllFilmsLikes() {
         return jdbc.query(FIND_ALL_FILMS_LIKES_QUERY, new FilmLikeRowMapper());
     }
