@@ -435,38 +435,36 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 "LEFT JOIN directors d ON fd.director_id = d.director_id " +
                 "WHERE (f.name LIKE ? OR d.name LIKE ?) ";
 
+        Comparator<Film> likeComparator = (film1, film2) -> film1.getUsersLiked().size() - film2.getUsersLiked().size();
         List<Film> searchedFilms = new ArrayList<>();
         String searchPattern = "%" + query + "%";
 
-        try {
-            switch (by) {
-                case "title" -> {
-                    searchedFilms = jdbc.query(
-                            FIND_ALL_FILMS + titleCondition,
-                            new FilmRowMapper(),
-                            searchPattern
-                    );
-                }
-                case "director" -> {
-                    searchedFilms =  jdbc.query(
-                            FIND_ALL_FILMS + directorCondition,
-                            new FilmRowMapper(),
-                            searchPattern
-                    );
-                }
-                case "director,title", "title,director" -> {
-                    searchedFilms =  jdbc.query(
-                            FIND_ALL_FILMS + titleAndDirectorCondition,
-                            new FilmRowMapper(),
-                            searchPattern,
-                            searchPattern
-                    );
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException(e);
+        if (by.equals("title")) {
+            searchedFilms = jdbc.query(
+                    FIND_ALL_FILMS + titleCondition,
+                    new FilmRowMapper(),
+                    searchPattern
+            );
+        } else if (by.equals("director")) {
+            searchedFilms = jdbc.query(
+                    FIND_ALL_FILMS + directorCondition,
+                    new FilmRowMapper(),
+                    searchPattern
+            );
+        } else if (by.equals("director,title") || by.equals("title,director")) {
+            searchedFilms = jdbc.query(
+                    FIND_ALL_FILMS + titleAndDirectorCondition,
+                    new FilmRowMapper(),
+                    searchPattern,
+                    searchPattern
+            );
+        } else {
+            throw new IllegalArgumentException("by должен содержать title, director или оба значения через запятую!");
         }
 
-        return searchedFilms.stream().map(film -> returnFilmByID(film.getId())).toList();
+        return searchedFilms.stream()
+                .map(film -> returnFilmByID(film.getId()))
+                .sorted(likeComparator.reversed())
+                .toList();
     }
 }
