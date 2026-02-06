@@ -137,4 +137,9 @@ public class FilmServiceImpl implements FilmService {
         log.info("Запрошены фильмы режиссера с id {} с сортировкой по {}", directorId, sortBy);
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
+        return filmStorage.getFilmsAfterSearching(query, by);
+    }
 }

@@ -40,4 +40,6 @@ public interface FilmService {
 
     List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
                               @Positive(message = "id должен быть положительным") Long friendId);
+
+    List<Film> getFilmsAfterSearching(String query, String by);
 }
