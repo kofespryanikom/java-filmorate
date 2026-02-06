@@ -29,26 +29,20 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository("FilmDbStorage")
 public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
-
-    private static final String FIND_ALL_UNIQUE_FILMS_ROWS_QUERY = "SELECT * FROM films ORDER BY film_id";
-
-    private static final String FIND_ALL_FILMS = "SELECT * FROM films f ";
-    private static final String FIND_ALL_FILMS_GENRES_QUERY =
-            "SELECT f.film_id, fg.genre_id " +
-            "FROM films f JOIN film_genres fg ON f.film_id = fg.film_id";
-
-    private static final String FIND_ALL_FILMS_LIKES_QUERY =
-            "SELECT f.film_id, ul.user_id " +
-            "FROM films f JOIN users_liked ul ON f.film_id = ul.film_id";
-
-    private static final String ADD_FILM_ROW_QUERY =
-            "INSERT INTO films (name, description, release_date, duration, rating_id) " +
-            "VALUES (?, ?, ?, ?, ?)";
-
-    private static final String UPDATE_FILM_ROW_QUERY =
-            "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, rating_id = ? " +
-            "WHERE film_id = ?";
-
+    private static final String FIND_ALL_UNIQUE_FILMS_ROWS_QUERY = "SELECT * " +
+                                                                   "FROM films ";
+    private static final String FIND_ALL_FILMS_GENRES_QUERY = "SELECT f.film_id, fg.genre_id " +
+                                                              "FROM films f " +
+                                                              "JOIN film_genres fg " +
+                                                              "ON f.film_id = fg.film_id";
+    private static final String FIND_ALL_FILMS_LIKES_QUERY = "SELECT film_id, user_id " +
+                                                             "FROM users_liked";
+    private static final String ADD_FILM_ROW_QUERY = "INSERT INTO films " +
+                                                     "(name, description, release_date, duration, rating_id) " +
+                                                     "VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_FILM_ROW_QUERY = "UPDATE films SET name = ?, description = ?, release_date = ?," +
+                                                        "duration = ?, rating_id = ? " +
+                                                        "WHERE film_id = ?";
     private static final String DELETE_FILM_GENRE_QUERY = "DELETE FROM film_genres WHERE film_id = ?";
     private static final String DELETE_FILM_LIKE_QUERY = "DELETE FROM users_liked WHERE film_id = ?";
     private static final String DELETE_FILM_DIRECTORS_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
@@ -77,7 +71,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_GENRES_IDS_QUERY = "SELECT genre_id FROM genres";
     private static final String FIND_RATINGS_QUERY = "SELECT * FROM rating";
     private static final String FIND_GENRES_QUERY = "SELECT * FROM genres";
-
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
 
     private static final String FIND_ALL_FILMS_DIRECTORS_QUERY =
@@ -466,5 +459,25 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 .map(film -> returnFilmByID(film.getId()))
                 .sorted(likeComparator.reversed())
                 .toList();
+      }
+  
+    public List<FilmLikeDto> getAllFilmsLikes() {
+        return jdbc.query(FIND_ALL_FILMS_LIKES_QUERY, new FilmLikeRowMapper());
+    }
+
+    @Override
+    public List<Film> returnFilmsListByIDs(List<Long> filmsIds) {
+        if (!filmsIds.isEmpty()) {
+            String returnFilmsByIdsQuery = FIND_ALL_UNIQUE_FILMS_ROWS_QUERY + "WHERE film_id IN (";
+            for (Long filmId : filmsIds) {
+                returnFilmsByIdsQuery += "?,";
+            }
+            returnFilmsByIdsQuery = returnFilmsByIdsQuery.substring(0, returnFilmsByIdsQuery.length() - 1)
+                    .concat(")");
+
+            return findMany(returnFilmsByIdsQuery, filmsIds.toArray(new Object[0]));
+        } else {
+            return new ArrayList<>();
+        }
     }
 }
