@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
+import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -120,7 +121,22 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<FilmLikeDto> getAllFilmsLikes() {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Film> returnFilmsListByIDs(List<Long> filmsIds) {
+        return new ArrayList<>();
+    }
+
+    @Override
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
         return new ArrayList<>();
     }
 }
