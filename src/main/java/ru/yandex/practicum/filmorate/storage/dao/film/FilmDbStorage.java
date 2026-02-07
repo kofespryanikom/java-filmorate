@@ -81,10 +81,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "SELECT f.film_id FROM films f " +
             "JOIN film_directors fd ON f.film_id = fd.film_id " +
             "WHERE fd.director_id = ? " +
-            "ORDER BY f.release_date ASC";
+            "ORDER BY f.release_date ASC, f.film_id ASC";
 
-    private static final String FIND_ALL_FILMS =
-            "SELECT * FROM films";
+    private static final String FIND_ALL_FILMS = "SELECT * FROM films";
 
     private static final String FIND_BY_DIRECTOR_SORT_LIKES =
             "SELECT f.film_id FROM films f " +
@@ -111,7 +110,47 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         this.directorStorage = directorStorage;
     }
 
-    @Override
+   @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        directorStorage.findById(directorId)
+                .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
+
+        String query = "year".equals(sortBy) ? FIND_BY_DIRECTOR_SORT_YEAR : FIND_BY_DIRECTOR_SORT_LIKES;
+
+        List<Long> filmsIds = jdbc.query(query, (rs, rowNum) -> rs.getLong("film_id"), directorId);
+
+        if (filmsIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String inSql = String.join(",", Collections.nCopies(filmsIds.size(), "?"));
+        List<Film> films = jdbc.query(
+                String.format("SELECT * FROM films WHERE film_id IN (%s)", inSql),
+                filmsIds.toArray(),
+                mapper
+        );
+
+        List<Film> enrichedFilms = loadFilmData(films);
+
+        for (Film f : enrichedFilms) {
+            if (f.getGenres() == null) {
+                f.setGenres(new LinkedHashSet<>());
+            }
+            if (f.getDirectors() == null) {
+                f.setDirectors(new ArrayList<>());
+            }
+        }
+
+        Map<Long, Film> filmMap = enrichedFilms.stream()
+                .collect(Collectors.toMap(Film::getId, Function.identity()));
+
+        return filmsIds.stream()
+                .map(filmMap::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+/*    @Override
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
         directorStorage.findById(directorId)
                 .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
@@ -140,7 +179,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 .map(filmMap::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-    }
+    }*/
 
     public List<Film> returnFilmsList() {
         List<Film> uniqueFilms = findMany(FIND_ALL_UNIQUE_FILMS_ROWS_QUERY);
