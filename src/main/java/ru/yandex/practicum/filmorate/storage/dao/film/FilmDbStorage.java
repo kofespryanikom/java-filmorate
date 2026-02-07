@@ -99,8 +99,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     
     private static final String FIND_BY_DIRECTOR_SORT_LIKES =
-            "SELECT f.film_id " +
-            "FROM films f " +
+            "SELECT f.film_id FROM films f " +
             "LEFT JOIN users_liked ul ON f.film_id = ul.film_id " +
             "JOIN film_directors fd ON f.film_id = fd.film_id " +
             "WHERE fd.director_id = ? " +
