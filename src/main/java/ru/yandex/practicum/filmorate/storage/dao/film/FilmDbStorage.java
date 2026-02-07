@@ -119,51 +119,34 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     @Override
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        directorStorage.findById(directorId)
+                .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
 
-    directorStorage.findById(directorId)
-            .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
+        String query = sortBy.equals("year") ? FIND_BY_DIRECTOR_SORT_YEAR : FIND_BY_DIRECTOR_SORT_LIKES;
 
-    String query = sortBy.equals("year") ? FIND_BY_DIRECTOR_SORT_YEAR : FIND_BY_DIRECTOR_SORT_LIKES;
+        List<Long> filmsIds = jdbc.query(query, (rs, rowNum) -> rs.getLong("film_id"), directorId);
 
-    List<Film> films = jdbc.query(query, mapper, directorId);
+        if (filmsIds.isEmpty()) {
+            return Collections.emptyList();
+        }
 
-    if (films.isEmpty()) {
-        return Collections.emptyList();
+        String inSql = String.join(",", Collections.nCopies(filmsIds.size(), "?"));
+        List<Film> films = jdbc.query(
+                String.format("SELECT * FROM films WHERE film_id IN (%s)", inSql),
+                filmsIds.toArray(),
+                mapper
+        );
+
+        List<Film> enrichedFilms = loadFilmData(films);
+
+        Map<Long, Film> filmMap = enrichedFilms.stream()
+                .collect(Collectors.toMap(Film::getId, Function.identity()));
+
+        return filmsIds.stream()
+                .map(filmMap::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
-
-    return loadFilmData(films);
-}
-
-    //@Override
-    //public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
-    //    directorStorage.findById(directorId)
-    //            .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
-//
-        //String query = sortBy.equals("year") ? FIND_BY_DIRECTOR_SORT_YEAR : FIND_BY_DIRECTOR_SORT_LIKES;
-//
-        //List<Long> filmsIds = jdbc.query(query, (rs, rowNum) -> rs.getLong("film_id"), directorId);
-//
-        //if (filmsIds.isEmpty()) {
-            //return Collections.emptyList();
-        //}
-//
-        //String inSql = String.join(",", Collections.nCopies(filmsIds.size(), "?"));
-        //List<Film> films = jdbc.query(
-                //String.format("SELECT * FROM films WHERE film_id IN (%s)", inSql),
-                //filmsIds.toArray(),
-                //mapper
-        //);
-//
-        //List<Film> enrichedFilms = loadFilmData(films);
-//
-        //Map<Long, Film> filmMap = enrichedFilms.stream()
-        //        .collect(Collectors.toMap(Film::getId, Function.identity()));
-//
-        //return filmsIds.stream()
-            //    .map(filmMap::get)
-              //  .filter(Objects::nonNull)
-        //        .collect(Collectors.toList());
- //   }
 
     public List<Film> returnFilmsList() {
         List<Film> uniqueFilms = findMany(FIND_ALL_UNIQUE_FILMS_ROWS_QUERY);
