@@ -83,7 +83,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "WHERE fd.director_id = ? " +
             "ORDER BY f.release_date ASC";
 
-    private static final String FIND_ALL_FILMS = 
+    private static final String FIND_ALL_FILMS =
             "SELECT * FROM films";
 
     private static final String FIND_BY_DIRECTOR_SORT_LIKES =
