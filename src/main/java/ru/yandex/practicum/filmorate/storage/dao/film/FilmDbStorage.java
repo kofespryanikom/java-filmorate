@@ -154,7 +154,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         for (Film film : films) {
             uniqueFilmsMap.put(film.getId(), film);
             if (film.getGenres() == null) film.setGenres(new HashSet<>());
-            if (film.getDirectors() == null) film.setDirectors(new LinkedHashSet<>());
+            if (film.getDirectors() == null) film.setDirectors(new HashSet<>());
             if (film.getUsersLiked() == null) film.setUsersLiked(new HashSet<>());
         }
 
