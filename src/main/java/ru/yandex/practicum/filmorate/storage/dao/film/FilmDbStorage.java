@@ -146,7 +146,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         return filmsIds.stream()
                 .map(filmMap::get)
-                .filter(Objects::nonNull)
+                //.filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
