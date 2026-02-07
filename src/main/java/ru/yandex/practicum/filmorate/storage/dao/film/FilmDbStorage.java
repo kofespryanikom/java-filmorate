@@ -151,8 +151,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         for (Film film : films) {
             uniqueFilmsMap.put(film.getId(), film);
             if (film.getGenres() == null) film.setGenres(new LinkedHashSet<>());
-            if (film.getDirectors() == null) film.setDirectors(new HashSet<>());
-            if (film.getUsersLiked() == null) film.setUsersLiked(new HashSet<>());
+            if (film.getDirectors() == null) film.setDirectors(new LinkedHashSet<>());
+            if (film.getUsersLiked() == null) film.setUsersLiked(new LinkedHashSet<>());
         }
 
         List<FilmGenreDto> filmIdGenreObjects = jdbc.query(FIND_ALL_FILMS_GENRES_QUERY, new FilmGenresRowMapper());
