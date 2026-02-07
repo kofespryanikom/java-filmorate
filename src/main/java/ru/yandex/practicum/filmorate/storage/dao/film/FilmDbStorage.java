@@ -137,7 +137,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 f.setGenres(new LinkedHashMap<>());
             }
             if (f.getDirectors() == null) {
-                f.setDirectors(new LinkedHashMap<>());
+                f.setDirectors(new ArrayList<>());
             }
         }
 
