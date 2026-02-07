@@ -248,6 +248,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     public Film addFilm(Film film) {
         checkHasRatingIdNotFoundException(film.getMpa().getId());
         checkGenresExists(film.getGenres());
+        checkDirectorsExists(film.getDirectors());
 
         Long justAddedFilmId = insert(ADD_FILM_ROW_QUERY,
                 film.getName(),
@@ -273,6 +274,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         checkHasRatingIdNotFoundException(film.getMpa().getId());
         checkGenresExists(film.getGenres());
+        checkDirectorsExists(film.getDirectors());
 
         boolean wereRowsUpdated = update(UPDATE_FILM_ROW_QUERY,
                 film.getName(),
@@ -427,6 +429,26 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         if (count == null || count != ids.size()) {
             throw new NotFoundException("Один или несколько жанров не найдены");
+        }
+    }
+
+    private void checkDirectorsExists(Set<Director> directors) {
+        if (directors == null || directors.isEmpty()) return;
+
+        List<Integer> ids = directors.stream()
+                .map(Director::getId)
+                .collect(Collectors.toList());
+
+        String inSql = String.join(",", Collections.nCopies(ids.size(), "?"));
+
+        Integer count = jdbc.queryForObject(
+                String.format("SELECT COUNT(*) FROM directors WHERE director_id IN (%s)", inSql),
+                Integer.class,
+                ids.toArray()
+        );
+
+        if (count == null || count != ids.size()) {
+            throw new NotFoundException("Один или несколько режиссеров не найдены");
         }
     }
 
