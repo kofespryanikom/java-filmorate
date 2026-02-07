@@ -91,7 +91,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "JOIN film_directors fd ON f.film_id = fd.film_id " +
             "WHERE fd.director_id = ? " +
             "GROUP BY f.film_id " +
-            "ORDER BY COUNT(ul.user_id) DESC, f.film_id ASC";
+            "ORDER BY COUNT(ul.user_id) DESC, f.release_date DESC, f.film_id ASC";
            // "SELECT f.film_id " +
           //  "FROM films AS f " +
          //   "LEFT JOIN users_liked AS ul ON f.film_id = ul.film_id " +
@@ -134,10 +134,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         for (Film f : enrichedFilms) {
             if (f.getGenres() == null) {
-                f.setGenres(new LinkedHashMap<>());
+                f.setGenres(new LinkedHashSet<>());
             }
             if (f.getDirectors() == null) {
-                f.setDirectors(new ArrayList<>());
+                f.setDirectors(new HashSet<>());
             }
         }
 
