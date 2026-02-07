@@ -134,10 +134,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         for (Film f : enrichedFilms) {
             if (f.getGenres() == null) {
-                f.setGenres(new LinkedHashSet<>());
+                f.setGenres(new HashSet<>());
             }
             if (f.getDirectors() == null) {
-                f.setDirectors(new ArrayList<>());
+                f.setDirectors(new HashSet<>());
             }
         }
 
