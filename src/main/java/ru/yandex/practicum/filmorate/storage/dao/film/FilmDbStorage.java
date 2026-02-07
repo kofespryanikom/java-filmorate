@@ -98,14 +98,14 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     //            "ORDER BY COUNT(ul.user_id) DESC, f.release_date DESC, f.film_id ASC";
 
     private static final String FIND_BY_DIRECTOR_SORT_LIKES =
-        "SELECT f.*, m.name AS mpa_name, COUNT(fl.user_id) AS likes " +
-        "FROM films AS f " +
-        "JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-        "LEFT JOIN mpa_ratings AS m ON f.mpa_id = m.mpa_id " +
-        "LEFT JOIN film_likes AS fl ON f.film_id = fl.film_id " +
-        "WHERE fd.director_id = ? " +
-        "GROUP BY f.film_id " +
-        "ORDER BY likes DESC";
+        "SELECT f.FILM_ID, f.NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.NAME as MPA_NAME, COUNT(fl.USER_ID) as LIKES " +
+        "FROM FILMS f " +
+        "JOIN FILM_DIRECTORS fd ON f.FILM_ID = fd.FILM_ID " +
+        "LEFT JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
+        "LEFT JOIN FILM_LIKES fl ON f.FILM_ID = fl.FILM_ID " +
+        "WHERE fd.DIRECTOR_ID = ? " +
+        "GROUP BY f.FILM_ID " +
+        "ORDER BY LIKES DESC, f.FILM_ID ASC";
 
     private final UserStorage userStorage;
     private final DirectorDbStorage directorStorage;
