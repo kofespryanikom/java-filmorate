@@ -32,9 +32,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_ALL_UNIQUE_FILMS_ROWS_QUERY = "SELECT * " +
                                                                    "FROM films ";
     private static final String FIND_ALL_FILMS_GENRES_QUERY = "SELECT f.film_id, fg.genre_id " +
-                                                              "FROM films f " +
-                                                              "JOIN film_genres fg " +
-                                                              "ON f.film_id = fg.film_id";
+                                                                "FROM film_genres";
+                                                              //"FROM films f " +
+                                                              //"JOIN film_genres fg " +
+                                                              //"ON f.film_id = fg.film_id";
     private static final String FIND_ALL_FILMS_LIKES_QUERY = "SELECT film_id, user_id " +
                                                              "FROM users_liked";
     private static final String ADD_FILM_ROW_QUERY = "INSERT INTO films " +
@@ -66,8 +67,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             "HAVING COUNT(DISTINCT ul.user_id) = 2 " +
             "ORDER BY like_count DESC";
 
-    private static final String FIND_GENRE_QUERY = "SELECT * FROM genres WHERE genre_id = ?";
-    private static final String FIND_RATING_QUERY = "SELECT * FROM rating WHERE rating_id = ?";
+    private static final String FIND_GENRE_QUERY = "SELECT * FROM genres"; //WHERE genre_id = ?";
+    private static final String FIND_RATING_QUERY = "SELECT * FROM rating"; //WHERE rating_id = ?";
     private static final String FIND_GENRES_IDS_QUERY = "SELECT genre_id FROM genres";
     private static final String FIND_RATINGS_QUERY = "SELECT * FROM rating";
     private static final String FIND_GENRES_QUERY = "SELECT * FROM genres";
@@ -132,21 +133,26 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
         List<Film> enrichedFilms = loadFilmData(films);
 
-        for (Film f : enrichedFilms) {
-            if (f.getGenres() == null) {
-                f.setGenres(new LinkedHashSet<>());
-            }
-            if (f.getDirectors() == null) {
-                f.setDirectors(new HashSet<>());
-            }
-        }
+     //   for (Film f : enrichedFilms) {
+            //if (f.getGenres() == null) {
+                //f.setGenres(new LinkedHashSet<>());
+          //  }
+            //if (f.getDirectors() == null) {
+                //f.setDirectors(new HashSet<>());
+           // }
+       // }
 
         Map<Long, Film> filmMap = enrichedFilms.stream()
-                .collect(Collectors.toMap(Film::getId, Function.identity()));
+                .collect(Collectors.toMap(Film::getId, Function.identity(), (f1, f2) -> f1));
 
         return filmsIds.stream()
                 .map(filmMap::get)
-                //.filter(Objects::nonNull)
+                .filter(Objects::nonNull)
+                .peek(f -> {
+                    if (f.getGenres() == null) f.setGenres(new LinkedHashSet<>());
+                    if (f.getDirectors() == null) f.setDirectors(new HashSet<>());
+                    if (f.getUsersLiked() == null) f.setUsersLiked(new HashSet<>());
+                })
                 .collect(Collectors.toList());
     }
 
@@ -192,9 +198,12 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         Map<Long, Film> uniqueFilmsMap = new LinkedHashMap<>();
         for (Film film : films) {
             uniqueFilmsMap.put(film.getId(), film);
-            if (film.getGenres() == null) film.setGenres(new HashSet<>());
-            if (film.getDirectors() == null) film.setDirectors(new HashSet<>());
-            if (film.getUsersLiked() == null) film.setUsersLiked(new HashSet<>());
+            film.setGenres(new LinkedHashSet<>());
+            film.setDirectors(new HashSet<>());
+            film.setUsersLiked(new HashSet<>());
+         //   if (film.getGenres() == null) film.setGenres(new HashSet<>());
+            //if (film.getDirectors() == null) film.setDirectors(new HashSet<>());
+          //  if (film.getUsersLiked() == null) film.setUsersLiked(new HashSet<>());
         }
 
         List<FilmGenreDto> filmIdGenreObjects = jdbc.query(FIND_ALL_FILMS_GENRES_QUERY, new FilmGenresRowMapper());
@@ -230,7 +239,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             }
         }
 
-        for (Film film : uniqueFilmsMap.values()) {
+ /*       for (Film film : uniqueFilmsMap.values()) {
             Integer ratingId = film.getMpa().getId();
             if (allRatingsMap.containsKey(ratingId)) {
                 film.getMpa().setName(allRatingsMap.get(ratingId).getName());
@@ -238,6 +247,25 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
             if (filmDirectorsMap.containsKey(film.getId())) {
                 film.setDirectors(filmDirectorsMap.get(film.getId()));
+            }
+        }
+
+        return new ArrayList<>(uniqueFilmsMap.values());
+    } */
+    jdbc.query(FIND_ALL_FILMS_DIRECTORS_QUERY, (rs) -> {
+            long filmId = rs.getLong("film_id");
+            Film f = uniqueFilmsMap.get(filmId);
+            if (f != null) {
+                Director d = new Director();
+                d.setId(rs.getInt("director_id"));
+                d.setName(rs.getString("name"));
+                f.getDirectors().add(d);
+            }
+        });
+
+        for (Film f : uniqueFilmsMap.values()) {
+            if (f.getMpa() != null && ratings.containsKey(f.getMpa().getId())) {
+                f.getMpa().setName(ratings.get(f.getMpa().getId()).getName());
             }
         }
 
