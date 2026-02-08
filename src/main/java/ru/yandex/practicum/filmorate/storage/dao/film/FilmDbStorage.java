@@ -264,8 +264,8 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         });
 
         for (Film f : uniqueFilmsMap.values()) {
-            if (f.getMpa() != null && ratings.containsKey(f.getMpa().getId())) {
-                f.getMpa().setName(ratings.get(f.getMpa().getId()).getName());
+            if (f.getMpa() != null && ratingId.containsKey(f.getMpa().getId())) {
+                f.getMpa().setName(ratingId.get(f.getMpa().getId()).getName());
             }
         }
 
