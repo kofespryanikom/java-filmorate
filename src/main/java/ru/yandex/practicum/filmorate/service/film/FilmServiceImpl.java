@@ -131,7 +131,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+    public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
         directorService.findById(directorId);
 
         log.info("Запрошены фильмы режиссера с id {} с сортировкой по {}", directorId, sortBy);

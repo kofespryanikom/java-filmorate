@@ -21,7 +21,7 @@ public class DirectorDbStorage extends BaseRepository<Director> {
     public DirectorDbStorage(JdbcTemplate jdbc) {
         super(jdbc,(rs, rowNum) -> {
             Director director = new Director();
-            director.setId(rs.getInt("director_id"));
+            director.setId(rs.getLong("director_id"));
             director.setName(rs.getString("name"));
             return  director;
         });
@@ -31,7 +31,7 @@ public class DirectorDbStorage extends BaseRepository<Director> {
         return findMany(FIND_ALL);
     }
 
-    public Optional<Director> findById(Integer id) {
+    public Optional<Director> findById(Long id) {
         return findOne(FIND_BY_ID, id);
     }
 
@@ -40,7 +40,7 @@ public class DirectorDbStorage extends BaseRepository<Director> {
         if (id == null) {
             throw new InternalServerErrorException("Не удалось получить id от базы");
         }
-        director.setId(id.intValue());
+        director.setId(id.longValue());
         return director;
     }
 
@@ -52,7 +52,7 @@ public class DirectorDbStorage extends BaseRepository<Director> {
         return director;
     }
 
-    public void deleteDirector(Integer id) {
+    public void deleteDirector(Long id) {
         delete(DELETE, id);
     }
 }

@@ -24,7 +24,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public Director findById(@Positive Integer id) {
+    public Director findById(@Positive Long id) {
         log.info("Запрошен режиссер с id {} ", id);
         return directorStorage.findById(id)
                 .orElseThrow(() -> new NotFoundException("Режиссер с id " + id + " не найден"));
@@ -44,7 +44,7 @@ public class DirectorServiceImpl implements DirectorService {
     }
 
     @Override
-    public void deleteDirector(@Positive Integer id) {
+    public void deleteDirector(@Positive Long id) {
         log.info("Удаление режиссера с id {} ", id);
         directorStorage.deleteDirector(id);
     }

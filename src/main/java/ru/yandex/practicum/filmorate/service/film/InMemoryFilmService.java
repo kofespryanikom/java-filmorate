@@ -139,7 +139,7 @@ public class InMemoryFilmService implements FilmService {
     }
 
     @Override
-    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+    public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 

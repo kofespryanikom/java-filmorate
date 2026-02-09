@@ -8,11 +8,11 @@ public interface DirectorService {
 
     List<Director> findAll();
 
-    Director findById(Integer id);
+    Director findById(Long id);
 
     Director createDirector(Director director);
 
     Director updateDirector(Director director);
 
-    void deleteDirector(Integer id);
+    void deleteDirector(Long id);
 }
