@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model.film;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import jakarta.validation.constraints.NotBlank;
@@ -39,6 +38,5 @@ public class Film {
     private Set<Long> usersLiked = new HashSet<>();
     private Set<Genre> genres = new LinkedHashSet<>();
     private Rating mpa;
-    @JsonAlias({"director"})
     private Set<Director> directors = new HashSet<>();
 }
