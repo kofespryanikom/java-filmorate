@@ -32,6 +32,7 @@ public class DirectorServiceImpl implements DirectorService {
 
     @Override
     public Director createDirector(Director director) {
+        validateDirector(director);
         log.info("Добавление нового режиссера: {} ", director.getName());
         return  directorStorage.createDirector(director);
     }
@@ -39,6 +40,7 @@ public class DirectorServiceImpl implements DirectorService {
     @Override
     public  Director updateDirector(Director director) {
         findById(director.getId());
+        validateDirector(director);
         log.info("Обновление режиссера с id {} ", director.getId());
         return  directorStorage.updateDirector(director);
     }

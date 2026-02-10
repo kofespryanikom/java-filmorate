@@ -1,10 +1,8 @@
 package ru.yandex.practicum.filmorate.service.film;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -64,9 +62,7 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film deleteLike(Long id, Long userId) {
-        if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
+        userStorage.returnUserById(userId);
 
         Film film = returnFilmByID(id);
         film.getUsersLiked().remove(userId);
@@ -78,16 +74,16 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count, Integer genreId, Integer year) {
+    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count, Integer genreId, Integer year)  {
 
         Comparator<Film> userComparator = (film1, film2) -> film1.getUsersLiked().size() - film2.getUsersLiked().size();
 
-        long limit = (count == null) ? 10 : count;
+        long limit = count == null ? 10 : count;
 
         return filmStorage.returnFilmsList().stream()
                 .sorted(userComparator.reversed())
-                .filter(film -> (genreId == null || film.getGenres().contains(getGenre(genreId)))
-                        && (year == null || film.getReleaseDate().getYear() == year))
+                .filter(film -> genreId == null || film.getGenres().contains(getGenre(genreId)))
+                .filter(film -> year == null || film.getReleaseDate().getYear() == year)
                 .limit(limit)
                 .toList();
     }
