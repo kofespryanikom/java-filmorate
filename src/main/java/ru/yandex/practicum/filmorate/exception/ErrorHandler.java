@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,21 +11,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice("ru.yandex.practicum.filmorate")
 public class ErrorHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
-        String errorMessage = e.getBindingResult().getFieldErrors().stream()
-                .map(FieldError::getDefaultMessage)
-                .collect(Collectors.joining(", "));
+    public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
+        FieldError fieldError = e.getBindingResult().getFieldError();
+        String message = (fieldError != null) ? fieldError.getDefaultMessage() : "Ошибка валидации";
 
-        log.warn("Ошибка валидации: {}", errorMessage);
-        return createResponse("Ошибка валидации", errorMessage);
+        return ResponseEntity.badRequest().body(createResponse("Ошибка валидации", message));
     }
 
     @ExceptionHandler(ValidationException.class)
@@ -43,9 +40,12 @@ public class ErrorHandler {
 
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleThrowable(Throwable e) {
+    public Map<String, String> handleThrowable(final Throwable e) {
         log.error("Произошла непредвиденная ошибка: ", e);
-        return createResponse("Внутренняя ошибка сервера", e.getMessage());
+        return createResponse(
+                "Внутренняя ошибка сервера",
+                e.getMessage() != null ? e.getMessage() : "Произошла непредвиденная ошибка"
+        );
     }
 
     private Map<String, String> createResponse(String error, String description) {
@@ -53,5 +53,12 @@ public class ErrorHandler {
         response.put("error", error);
         response.put("description", description);
         return response;
+    }
+
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleHttpMessageNotReadable(org.springframework.http.converter.HttpMessageNotReadableException e) {
+        log.warn("Пустое тело запроса или неверный формат JSON: {}", e.getMessage());
+        return createResponse("Ошибка валидации", "Тело запроса отсутствует или некорректно");
     }
 }

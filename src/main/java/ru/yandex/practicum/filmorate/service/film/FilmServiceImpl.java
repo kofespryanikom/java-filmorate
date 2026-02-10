@@ -51,26 +51,23 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Film addLike(Long id, Long userId) {
         userStorage.returnUserById(userId);
+        filmStorage.returnFilmByID(id);
 
-        Film film = returnFilmByID(id);
-        film.getUsersLiked().add(userId);
-        filmStorage.renewFilm(film);
+        filmStorage.addLike(id, userId);
 
         log.info("Добавлен лайк фильму с id {} от пользователя с id {}", id, userId);
-        return film;
+        return returnFilmByID(id);
     }
 
     @Override
     public Film deleteLike(Long id, Long userId) {
         userStorage.returnUserById(userId);
+        filmStorage.returnFilmByID(id);
 
-        Film film = returnFilmByID(id);
-        film.getUsersLiked().remove(userId);
-
-        filmStorage.renewFilm(film);
+        filmStorage.deleteLike(id, userId);
 
         log.info("Убран лайк с фильма с id {} от пользователя с id {}", id, userId);
-        return film;
+        return returnFilmByID(id);
     }
 
     @Override

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.dao.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -68,12 +69,12 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                     "SELECT f.* FROM films f " +
                     "JOIN film_directors fd ON f.film_id = fd.film_id " +
                     "LEFT JOIN ( " +
-                    "   SELECT film_id, COUNT(user_id) AS likes " +
+                    "   SELECT film_id, COUNT(user_id) AS cnt " +
                     "   FROM users_liked " +
                     "   GROUP BY film_id " +
                     ") l ON f.film_id = l.film_id " +
                     "WHERE fd.director_id = ? " +
-                    "ORDER BY COALESCE(l.likes, 0) DESC, " +
+                    "ORDER BY COALESCE(l.cnt, 0) DESC, " +
                     "         f.film_id ASC";
 
     private final UserStorage userStorage;
@@ -91,34 +92,27 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         directorStorage.findById(directorId)
                 .orElseThrow(() -> new NotFoundException("Режиссер не найден"));
 
-        String query = sortBy.equals("year") ? FIND_BY_DIRECTOR_SORT_YEAR : FIND_BY_DIRECTOR_SORT_LIKES;
-        List<Long> filmsIds = jdbc.query(query, (rs, rowNum) -> rs.getLong("film_id"), directorId);
+        String query = sortBy.equals("year")
+                ? FIND_BY_DIRECTOR_SORT_YEAR
+                : FIND_BY_DIRECTOR_SORT_LIKES;
 
-        if (filmsIds.isEmpty()) {
-            return Collections.emptyList();
-        }
+        List<Film> sortedFilms = jdbc.query(query, mapper, directorId);
+        if (sortedFilms.isEmpty()) return Collections.emptyList();
 
-        String inSql = filmsIds.stream().map(id -> "?").collect(Collectors.joining(","));
-        List<Film> unsortedFilms = jdbc.query(
-                String.format("SELECT * FROM films WHERE film_id IN (%s)", inSql),
-                filmsIds.toArray(),
-                mapper
-        );
+        List<Long> originalOrder = sortedFilms.stream().map(Film::getId).collect(Collectors.toList());
 
-        List<Film> enrichedFilms = loadFilmData(unsortedFilms);
+        List<Film> enrichedFilms = loadFilmData(sortedFilms);
 
         Map<Long, Film> filmMap = enrichedFilms.stream()
                 .collect(Collectors.toMap(Film::getId, Function.identity()));
 
-        return filmsIds.stream()
+        return originalOrder.stream()
                 .map(filmMap::get)
-                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }
 
     public List<Film> returnFilmsList() {
-        List<Film> uniqueFilms = findMany("SELECT * FROM films ORDER BY film_id");
-        return loadFilmData(uniqueFilms);
+        return loadFilmData(findMany("SELECT * FROM films ORDER BY film_id ASC"));
     }
 
     private List<Film> loadFilmData(List<Film> films) {
@@ -273,18 +267,21 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private void batchInsertDirectors(Film film) {
         if (film.getDirectors() == null || film.getDirectors().isEmpty()) return;
 
-        List<Director> directors = new ArrayList<>(new LinkedHashSet<>(film.getDirectors()));
+        List<Director> uniqueDirectors = film.getDirectors().stream()
+                .distinct()
+                .collect(Collectors.toList());
+
         jdbc.batchUpdate("INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)",
                 new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
                         ps.setLong(1, film.getId());
-                        ps.setLong(2, directors.get(i).getId());
+                        ps.setLong(2, uniqueDirectors.get(i).getId());
                     }
 
                     @Override
                     public int getBatchSize() {
-                        return directors.size();
+                        return uniqueDirectors.size();
                     }
                 });
     }
@@ -391,5 +388,20 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
                 .map(filmMap::get)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    public void addLike(Long filmId, Long userId) {
+        String sql = "INSERT INTO users_liked (film_id, user_id) VALUES (?, ?)";
+
+        try {
+            jdbc.update(sql, filmId, userId);
+        } catch (DuplicateKeyException e) {
+            log.warn("Пользователь {} уже поставил лайк фильму {}", userId, filmId);
+        }
+    }
+
+    public void deleteLike(Long filmId, Long userId) {
+        String sql = "DELETE FROM users_liked WHERE film_id = ? AND user_id = ?";
+        jdbc.update(sql, filmId, userId);
     }
 }

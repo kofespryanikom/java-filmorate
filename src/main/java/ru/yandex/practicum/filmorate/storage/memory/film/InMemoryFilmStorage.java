@@ -123,4 +123,20 @@ public class InMemoryFilmStorage implements FilmStorage {
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
         return new ArrayList<>();
     }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        Film film = films.get(filmId);
+        if (film != null) {
+            film.getUsersLiked().add(userId);
+        }
+    }
+
+    @Override
+    public void deleteLike(Long filmId, Long userId) {
+        Film film = films.get(filmId);
+        if (film != null) {
+            film.getUsersLiked().remove(userId);
+        }
+    }
 }
