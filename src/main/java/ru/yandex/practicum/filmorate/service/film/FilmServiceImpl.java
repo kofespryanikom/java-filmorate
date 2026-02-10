@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.user.EventType;
 import ru.yandex.practicum.filmorate.model.user.Operation;
@@ -55,47 +54,42 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Film addLike(Long id, Long userId) {
         userStorage.returnUserById(userId);
+        filmStorage.returnFilmByID(id);
 
-        Film film = returnFilmByID(id);
-        film.getUsersLiked().add(userId);
-        filmStorage.renewFilm(film);
+        filmStorage.addLike(id, userId);
 
         log.info("Добавлен лайк фильму с id {} от пользователя с id {}", id, userId);
 
         userStorage.addFeed(userId, EventType.LIKE, Operation.ADD, id);
 
-        return film;
+        return returnFilmByID(id);
     }
 
     @Override
     public Film deleteLike(Long id, Long userId) {
-        if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
+        userStorage.returnUserById(userId);
+        filmStorage.returnFilmByID(id);
 
-        Film film = returnFilmByID(id);
-        film.getUsersLiked().remove(userId);
-
-        filmStorage.renewFilm(film);
+        filmStorage.deleteLike(id, userId);
 
         log.info("Убран лайк с фильма с id {} от пользователя с id {}", id, userId);
 
         userStorage.addFeed(userId, EventType.LIKE, Operation.REMOVE, id);
 
-        return film;
+        return returnFilmByID(id);
     }
 
     @Override
-    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count, Integer genreId, Integer year) {
+    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count, Integer genreId, Integer year)  {
 
         Comparator<Film> userComparator = (film1, film2) -> film1.getUsersLiked().size() - film2.getUsersLiked().size();
 
-        long limit = (count == null) ? 10 : count;
+        long limit = count == null ? 10 : count;
 
         return filmStorage.returnFilmsList().stream()
                 .sorted(userComparator.reversed())
-                .filter(film -> (genreId == null || film.getGenres().contains(getGenre(genreId)))
-                        && (year == null || film.getReleaseDate().getYear() == year))
+                .filter(film -> genreId == null || film.getGenres().contains(getGenre(genreId)))
+                .filter(film -> year == null || film.getReleaseDate().getYear() == year)
                 .limit(limit)
                 .toList();
     }

@@ -1,14 +1,16 @@
 package ru.yandex.practicum.filmorate.model.film;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.*;
 
 @Data
-@JsonPropertyOrder({ "id", "name" })
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
 public class Director {
     private Integer id;
 
-    @NotNull(message = "Имя режиссера не может быть пустым")
+    @NotNull(message = "Имя режиссера не может быть null")
     private String name;
 }
