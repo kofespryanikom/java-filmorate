@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
-import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
@@ -31,12 +30,8 @@ import java.util.stream.Collectors;
 public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String FIND_ALL_UNIQUE_FILMS_ROWS_QUERY = "SELECT * " +
                                                                    "FROM films ";
-    private static final String FIND_ALL_FILMS_GENRES_QUERY = "SELECT f.film_id, fg.genre_id " +
-                                                              "FROM films f " +
-                                                              "JOIN film_genres fg " +
-                                                              "ON f.film_id = fg.film_id";
-    private static final String FIND_ALL_FILMS_LIKES_QUERY = "SELECT film_id, user_id " +
-                                                             "FROM users_liked";
+
+    private static final String FIND_ALL_FILMS_LIKES_QUERY = "SELECT film_id, user_id FROM users_liked";
     private static final String ADD_FILM_ROW_QUERY = "INSERT INTO films " +
                                                      "(name, description, release_date, duration, rating_id) " +
                                                      "VALUES (?, ?, ?, ?, ?)";
@@ -48,14 +43,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private static final String DELETE_FILM_DIRECTORS_QUERY = "DELETE FROM film_directors WHERE film_id = ?";
 
     private static final String FIND_FILM_QUERY = "SELECT * FROM films WHERE film_id = ?";
-    private static final String FIND_FILM_GENRES_QUERY =
-            "SELECT f.film_id, fg.genre_id FROM films f " +
-            "JOIN film_genres fg ON f.film_id = fg.film_id WHERE f.film_id = ?";
-
-    private static final String FIND_FILM_LIKES_QUERY =
-            "SELECT f.film_id, ul.user_id FROM films f " +
-            "JOIN users_liked ul ON f.film_id = ul.film_id WHERE f.film_id = ?";
-
     private static final String FIND_COMMON_FILMS_QUERY =
                     "SELECT f.*, COUNT(DISTINCT ul_all.user_id) as like_count " +
                     "FROM films f " +
@@ -68,15 +55,10 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     private static final String FIND_GENRE_QUERY = "SELECT * FROM genres WHERE genre_id = ?";
     private static final String FIND_RATING_QUERY = "SELECT * FROM rating WHERE rating_id = ?";
-    private static final String FIND_GENRES_IDS_QUERY = "SELECT genre_id FROM genres";
     private static final String FIND_RATINGS_QUERY = "SELECT * FROM rating";
     private static final String FIND_GENRES_QUERY = "SELECT * FROM genres";
 
     private static final String DELETE_FILM_QUERY = "DELETE FROM films WHERE film_id = ?";
-
-    private static final String FIND_ALL_FILMS_DIRECTORS_QUERY =
-            "SELECT fd.film_id, d.director_id, d.name " +
-            "FROM film_directors fd JOIN directors d ON fd.director_id = d.director_id";
 
     private static final String FIND_BY_DIRECTOR_SORT_YEAR =
                     "SELECT f.* FROM films f " +
@@ -363,16 +345,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     private void checkHasRatingIdNotFoundException(Integer id) {
         getRating(id);
-    }
-
-    private void checkIsUsersLikedSetInUsersDb(Set<Long> usersLiked) {
-        List<User> existingUsers = userStorage.returnUsersList();
-        Set<Long> existingUsersIds = existingUsers.stream()
-                .map(User::getId).collect(Collectors.toSet());
-        if (!existingUsersIds.containsAll(usersLiked)) {
-            log.warn("Множество лайкнувших пользователей в таблице пользователей не было найдено");
-            throw new NotFoundException("Множество лайкнувших пользователей в таблице пользователей не было найдено");
-        }
     }
 
     private void checkGenresExists(Set<Genre> genres) {
