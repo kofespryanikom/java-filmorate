@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.user.EventType;
+import ru.yandex.practicum.filmorate.model.user.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
@@ -57,6 +59,9 @@ public class FilmServiceImpl implements FilmService {
         filmStorage.addLike(id, userId);
 
         log.info("Добавлен лайк фильму с id {} от пользователя с id {}", id, userId);
+
+        userStorage.addFeed(userId, EventType.LIKE, Operation.ADD, id);
+
         return returnFilmByID(id);
     }
 
@@ -68,6 +73,9 @@ public class FilmServiceImpl implements FilmService {
         filmStorage.deleteLike(id, userId);
 
         log.info("Убран лайк с фильма с id {} от пользователя с id {}", id, userId);
+
+        userStorage.addFeed(userId, EventType.LIKE, Operation.REMOVE, id);
+
         return returnFilmByID(id);
     }
 
@@ -122,5 +130,10 @@ public class FilmServiceImpl implements FilmService {
 
         log.info("Запрошены фильмы режиссера с id {} с сортировкой по {}", directorId, sortBy);
         return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
+        return filmStorage.getFilmsAfterSearching(query, by);
     }
 }
