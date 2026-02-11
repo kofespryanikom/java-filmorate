@@ -69,6 +69,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         String name = user.getName();
         LocalDate birthdayDate = user.getBirthday();
         if (name == null || name.isBlank()) {
+            user.setName(login);
             name = login;
         }
 
@@ -85,7 +86,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                 "(user_id, friend_id) " +
                 "VALUES ";
 
-                Long id = user.getId();
+        Long id = user.getId();
         String email = user.getEmail();
         String login = user.getLogin();
         String name = user.getName();
@@ -93,6 +94,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         List<Long> friendsList = user.getFriendsList();
 
         if (name == null || name.isBlank()) {
+            user.setName(login);
             name = login;
         }
 
@@ -122,12 +124,12 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     public User returnUserById(Long id) {
         Optional<User> user = findOne(FIND_USER_QUERY, id);
-        List<UserFriendDto> friendsList = jdbc.query(FIND_ALL_USER_FRIENDS, new FriendRowMapper(), id);
 
         if (user.isEmpty()) {
-            log.warn("Пользователь с id {} не найден", id);
-            throw new NotFoundException("Пользователь с id " + id + " не найден");
+            throw new NotFoundException("Фильм с id " + id + " не найден");
         }
+
+        List<UserFriendDto> friendsList = jdbc.query(FIND_ALL_USER_FRIENDS, new FriendRowMapper(), id);
 
         User userToBeCompleted = user.get();
 
@@ -182,6 +184,11 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     }
 
     public List<Feed> getFeedsByUserId(Long userId) {
+        List<Long> usersIds = returnUsersList().stream().map(User::getId).toList();
+        if (!usersIds.contains(userId)) {
+            throw new NotFoundException("Пользователь с таким id не найден!");
+        }
+
         return jdbc.query(FIND_FEEDS_QUERY, new FeedRowMapper(), userId);
     }
 }

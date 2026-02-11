@@ -13,7 +13,7 @@ public interface UserService {
 
     List<User> returnUsersList();
 
-    User returnUserById(@PositiveOrZero(message = "id должен быть положительным") Long id);
+    User returnUserById(Long id);
 
     User addUser(User user);
 

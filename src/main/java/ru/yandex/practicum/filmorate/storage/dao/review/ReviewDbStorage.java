@@ -28,8 +28,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                                                    "(content, is_positive, user_id, film_id, useful) " +
                                                    "VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_REVIEW_QUERY = "UPDATE reviews SET " +
-                                                      "content = ?, is_positive = ?, user_id = ?, film_id = ?, " +
-                                                      "useful = ? " +
+                                                      "content = ?, is_positive = ? " +
                                                       "WHERE review_id = ?";
     private static final String UPDATE_USEFUL_IN_REVIEWS_TABLE_QUERY = "UPDATE reviews SET " +
                                                                        "useful = ? " +
@@ -45,7 +44,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                                                                 "LIMIT ?";
     private static final String FIND_ALL_REVIEWS_QUERY = "SELECT * " +
                                                          "FROM reviews " +
-                                                         "ORDER BY useful DESC" +
+                                                         "ORDER BY useful DESC " +
                                                          "LIMIT ?";
     private static final String ADD_REVIEW_REACTION_QUERY = "INSERT INTO reviews_reactions " +
                                                             "(review_id, user_id, is_positive) " +
@@ -56,6 +55,12 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                                                              "AND user_id = ?";
     private static final String DELETE_REVIEW_REACTION_QUERY = "DELETE FROM reviews_reactions " +
                                                                "WHERE review_id = ? AND user_id = ?";
+
+    private static final String FIND_FILM_ID = "SELECT film_id FROM reviews WHERE review_id = ?";
+
+    private static final String FIND_USER_ID = "SELECT user_id FROM reviews WHERE review_id = ?";
+
+    private static final String FIND_USEFUL_ID = "SELECT useful FROM reviews WHERE review_id = ?";
 
     public ReviewDbStorage(JdbcTemplate jdbc, RowMapper<Review> mapper,
                            @Qualifier("UserDbStorage") UserStorage userStorage,
@@ -86,28 +91,25 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         Long reviewId = insert(ADD_REVIEW_QUERY, content, isPositive, userId, filmId, useful);
         review.setReviewId(reviewId);
 
-        userStorage.addFeed(userId, EventType.REVIEW, Operation.ADD, reviewId);
         log.info("Отзыв с id {} добавлен", reviewId);
 
+        userStorage.addFeed(review.getUserId(), EventType.REVIEW, Operation.ADD, review.getReviewId());
         return review;
     }
 
     public Review renewReview(Review review) {
-        checkDoesFilmExist(review.getFilmId());
-        checkDoesUserExist(review.getUserId());
-
         Long reviewId = review.getReviewId();
         String content = review.getContent();
         Boolean isPositive = review.getIsPositive();
-        Long userId = review.getUserId();
-        Long filmId = review.getFilmId();
-        Long useful = review.getUseful();
 
-        update(UPDATE_REVIEW_QUERY, content, isPositive, userId, filmId, useful, reviewId);
+        update(UPDATE_REVIEW_QUERY, content, isPositive, reviewId);
 
-        userStorage.addFeed(userId, EventType.REVIEW, Operation.UPDATE, reviewId);
+        review.setFilmId(jdbc.queryForObject(FIND_FILM_ID, Long.class, reviewId));
+        review.setUserId(jdbc.queryForObject(FIND_USER_ID, Long.class, reviewId));
+        review.setUseful(jdbc.queryForObject(FIND_USEFUL_ID, Long.class, reviewId));
+
         log.info("Отзыв с id {} обновлен", reviewId);
-
+        userStorage.addFeed(review.getUserId(), EventType.REVIEW, Operation.UPDATE, review.getReviewId());
         return review;
     }
 
@@ -120,6 +122,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
     public void deleteReview(Long reviewId) {
         Long userId = returnReviewById(reviewId).getUserId();
+        Long filmId = returnReviewById(reviewId).getFilmId();
 
         delete(DELETE_REVIEW_QUERY, reviewId);
         userStorage.addFeed(userId, EventType.REVIEW, Operation.REMOVE, reviewId);

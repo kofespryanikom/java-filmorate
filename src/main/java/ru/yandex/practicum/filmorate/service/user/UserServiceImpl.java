@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User returnUserById(@Positive Long id) {
+    public User returnUserById(Long id) {
         return userStorage.returnUserById(id);
     }
 
@@ -124,7 +124,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteUser(@Positive long id) {
+    public void deleteUser(long id) {
         if (id <= 0) {
             throw new ValidationException("ID пользователя должен быть положительным");
         }
