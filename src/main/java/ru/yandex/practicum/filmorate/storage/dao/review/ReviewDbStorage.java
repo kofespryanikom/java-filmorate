@@ -109,7 +109,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         review.setUseful(jdbc.queryForObject(FIND_USEFUL_ID, Long.class, reviewId));
 
         log.info("Отзыв с id {} обновлен", reviewId);
-        userStorage.addFeed(review.getUserId(), EventType.REVIEW, Operation.UPDATE, review.getFilmId());
+        userStorage.addFeed(review.getUserId(), EventType.REVIEW, Operation.UPDATE, review.getReviewId());
         return review;
     }
 
