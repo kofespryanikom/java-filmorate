@@ -58,7 +58,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
     private static final String FIND_FILM_ID = "SELECT film_id FROM reviews WHERE review_id = ?";
 
-    private static final String FIND_USER_ID = "SELECT film_id FROM reviews WHERE review_id = ?";
+    private static final String FIND_USER_ID = "SELECT user_id FROM reviews WHERE review_id = ?";
 
     private static final String FIND_USEFUL_ID = "SELECT useful FROM reviews WHERE review_id = ?";
 
