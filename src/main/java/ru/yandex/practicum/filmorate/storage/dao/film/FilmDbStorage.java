@@ -13,6 +13,8 @@ import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
+import ru.yandex.practicum.filmorate.model.user.EventType;
+import ru.yandex.practicum.filmorate.model.user.Operation;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -215,11 +217,6 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         checkHasRatingIdNotFoundException(film.getMpa().getId());
         checkGenresExists(film.getGenres());
 
-        if (film.getDirectors() == null || film.getDirectors().isEmpty()) {
-            Film fromDb = returnFilmByID(filmId);
-            film.setDirectors(fromDb.getDirectors());
-        }
-
         boolean wereRowsUpdated = update(UPDATE_FILM_ROW_QUERY,
                 film.getName(),
                 film.getDescription(),
@@ -412,27 +409,30 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         } catch (DuplicateKeyException e) {
             log.warn("Пользователь {} уже поставил лайк фильму {}", userId, filmId);
         }
+        userStorage.addFeed(userId, EventType.LIKE, Operation.ADD, filmId);
     }
 
     public void deleteLike(Long filmId, Long userId) {
         List<Long> usersIds = userStorage.returnUsersList().stream().map(User::getId).toList();
+
         if (!usersIds.contains(userId)) {
             throw new NotFoundException("Пользователь с таким id не найден!");
         }
-        
+
         String sql = "DELETE FROM users_liked WHERE film_id = ? AND user_id = ?";
         jdbc.update(sql, filmId, userId);
+        userStorage.addFeed(userId, EventType.LIKE, Operation.REMOVE, filmId);
     }
 
     @Override
     public List<Film> getFilmsAfterSearching(String query, String by) {
-        final String titleCondition = " WHERE f.name LIKE ? ";
+        final String titleCondition = " WHERE LOWER(f.name) LIKE LOWER(?) ";
         final String directorCondition = " LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors d ON fd.director_id = d.director_id " +
-                "WHERE d.name LIKE ? ";
+                "WHERE LOWER(d.name) LIKE LOWER(?) ";
         final String titleAndDirectorCondition = " LEFT JOIN film_directors fd ON f.film_id = fd.film_id " +
                 "LEFT JOIN directors d ON fd.director_id = d.director_id " +
-                "WHERE (f.name LIKE ? OR d.name LIKE ?) ";
+                "WHERE (LOWER(f.name) LIKE LOWER(?) OR LOWER(d.name) LIKE LOWER(?)) ";
 
         Comparator<Film> likeComparator = (film1, film2) -> film1.getUsersLiked().size() - film2.getUsersLiked().size();
         List<Film> searchedFilms;
@@ -481,7 +481,7 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
             returnFilmsByIdsQuery = returnFilmsByIdsQuery.substring(0, returnFilmsByIdsQuery.length() - 1)
                     .concat(")");
 
-            return findMany(returnFilmsByIdsQuery, filmsIds.toArray(new Object[0]));
+            return loadFilmData(findMany(returnFilmsByIdsQuery, filmsIds.toArray(new Object[0])));
         } else {
             return new ArrayList<>();
         }

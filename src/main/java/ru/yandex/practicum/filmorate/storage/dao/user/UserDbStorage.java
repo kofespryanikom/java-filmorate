@@ -124,12 +124,12 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     public User returnUserById(Long id) {
         Optional<User> user = findOne(FIND_USER_QUERY, id);
-        List<UserFriendDto> friendsList = jdbc.query(FIND_ALL_USER_FRIENDS, new FriendRowMapper(), id);
 
         if (user.isEmpty()) {
-            log.warn("Пользователь с id {} не найден", id);
-            throw new NotFoundException("Пользователь с id " + id + " не найден");
+            throw new NotFoundException("Фильм с id " + id + " не найден");
         }
+
+        List<UserFriendDto> friendsList = jdbc.query(FIND_ALL_USER_FRIENDS, new FriendRowMapper(), id);
 
         User userToBeCompleted = user.get();
 
