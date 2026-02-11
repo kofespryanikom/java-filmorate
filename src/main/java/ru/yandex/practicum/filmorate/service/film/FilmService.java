@@ -20,8 +20,8 @@ public interface FilmService {
     Film addLike(@Positive(message = "id должен быть положительным") Long id,
                  @Positive(message = "id должен быть положительным") Long userId);
 
-    Film deleteLike(@Positive(message = "id должен быть положительным") Long id,
-                    @Positive(message = "id должен быть положительным") Long userId);
+    Film deleteLike(Long id,
+                    Long userId);
 
     List<Film> returnMostLikedFilmsInAmountOfCount(
             @Positive(message = "count не может быть отрицательным") Long count, Integer genreId, Integer year);

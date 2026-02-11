@@ -3,12 +3,17 @@ package ru.yandex.practicum.filmorate.service.review;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.review.Review;
+import ru.yandex.practicum.filmorate.model.user.EventType;
+import ru.yandex.practicum.filmorate.model.user.Operation;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 
@@ -16,9 +21,15 @@ import java.util.List;
 @Service
 @Transactional
 @Validated
-@RequiredArgsConstructor
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
+
+    private final UserStorage userStorage;
+
+    public ReviewServiceImpl (ReviewStorage reviewStorage, @Qualifier("UserDbStorage") UserStorage userStorage) {
+        this.reviewStorage = reviewStorage;
+        this.userStorage = userStorage;
+    }
 
     public Review addLikeToReview(@Positive Long reviewId, @Positive Long userId) {
         deleteReviewReaction(reviewId, userId);
@@ -31,6 +42,8 @@ public class ReviewServiceImpl implements ReviewService {
         reviewStorage.addReviewReaction(reviewId, userId, true);
 
         review = reviewStorage.returnReviewById(reviewId);
+
+        userStorage.addFeed(userId, EventType.REVIEW, Operation.UPDATE, review.getFilmId());
         return review;
     }
 
@@ -45,6 +58,8 @@ public class ReviewServiceImpl implements ReviewService {
         reviewStorage.addReviewReaction(reviewId, userId, false);
 
         review = reviewStorage.returnReviewById(reviewId);
+
+        userStorage.addFeed(userId, EventType.REVIEW, Operation.UPDATE, review.getFilmId());
         return review;
     }
 
@@ -67,13 +82,17 @@ public class ReviewServiceImpl implements ReviewService {
 
             reviewStorage.renewUsefulPointsCount(review);
         }
+
+        userStorage.addFeed(userId, EventType.REVIEW, Operation.UPDATE, review.getFilmId());
     }
 
     public Review addReview(Review review) {
+        userStorage.addFeed(review.getUserId(), EventType.REVIEW, Operation.ADD, review.getFilmId());
         return reviewStorage.addReview(review);
     }
 
     public Review renewReview(Review review) {
+        userStorage.addFeed(review.getUserId(), EventType.REVIEW, Operation.UPDATE, review.getFilmId());
         return reviewStorage.renewReview(review);
     }
 

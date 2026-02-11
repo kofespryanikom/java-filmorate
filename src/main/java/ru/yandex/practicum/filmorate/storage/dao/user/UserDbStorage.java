@@ -69,6 +69,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         String name = user.getName();
         LocalDate birthdayDate = user.getBirthday();
         if (name == null || name.isBlank()) {
+            user.setName(login);
             name = login;
         }
 
@@ -85,7 +86,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                 "(user_id, friend_id) " +
                 "VALUES ";
 
-                Long id = user.getId();
+        Long id = user.getId();
         String email = user.getEmail();
         String login = user.getLogin();
         String name = user.getName();
@@ -93,6 +94,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         List<Long> friendsList = user.getFriendsList();
 
         if (name == null || name.isBlank()) {
+            user.setName(login);
             name = login;
         }
 
@@ -182,6 +184,11 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     }
 
     public List<Feed> getFeedsByUserId(Long userId) {
+        List<Long> usersIds = returnUsersList().stream().map(User::getId).toList();
+        if (!usersIds.contains(userId)) {
+            throw new NotFoundException("Пользователь с таким id не найден!");
+        }
+
         return jdbc.query(FIND_FEEDS_QUERY, new FeedRowMapper(), userId);
     }
 }

@@ -45,7 +45,7 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
                                                                 "LIMIT ?";
     private static final String FIND_ALL_REVIEWS_QUERY = "SELECT * " +
                                                          "FROM reviews " +
-                                                         "ORDER BY useful DESC" +
+                                                         "ORDER BY useful DESC " +
                                                          "LIMIT ?";
     private static final String ADD_REVIEW_REACTION_QUERY = "INSERT INTO reviews_reactions " +
                                                             "(review_id, user_id, is_positive) " +
@@ -86,7 +86,6 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
         Long reviewId = insert(ADD_REVIEW_QUERY, content, isPositive, userId, filmId, useful);
         review.setReviewId(reviewId);
 
-        userStorage.addFeed(userId, EventType.REVIEW, Operation.ADD, reviewId);
         log.info("Отзыв с id {} добавлен", reviewId);
 
         return review;
@@ -105,7 +104,6 @@ public class ReviewDbStorage extends BaseRepository<Review> implements ReviewSto
 
         update(UPDATE_REVIEW_QUERY, content, isPositive, userId, filmId, useful, reviewId);
 
-        userStorage.addFeed(userId, EventType.REVIEW, Operation.UPDATE, reviewId);
         log.info("Отзыв с id {} обновлен", reviewId);
 
         return review;

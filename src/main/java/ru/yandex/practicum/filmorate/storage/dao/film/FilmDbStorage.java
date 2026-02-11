@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
+import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
@@ -414,6 +415,11 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     }
 
     public void deleteLike(Long filmId, Long userId) {
+        List<Long> usersIds = userStorage.returnUsersList().stream().map(User::getId).toList();
+        if (!usersIds.contains(userId)) {
+            throw new NotFoundException("Пользователь с таким id не найден!");
+        }
+        
         String sql = "DELETE FROM users_liked WHERE film_id = ? AND user_id = ?";
         jdbc.update(sql, filmId, userId);
     }
