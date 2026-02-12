@@ -26,6 +26,9 @@ public class UserServiceImpl implements UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
+    private static final Integer ZERO_MATCHES_COUNT = 0;
+    private static final Integer ONE_MATCHES_SCORE = 1;
+
     public UserServiceImpl(@Qualifier("UserDbStorage") UserStorage userStorage,
                            @Qualifier("FilmDbStorage") FilmStorage filmStorage) {
         this.userStorage = userStorage;
@@ -147,7 +150,7 @@ public class UserServiceImpl implements UserService {
 
             if (filmsThatConsideredUserLiked.contains(filmLike.getFilmId())) {
                 matchesCount.put(filmLike.getUserLikedId(),
-                        matchesCount.getOrDefault(filmLike.getUserLikedId(), 0) + 1);
+                        matchesCount.getOrDefault(filmLike.getUserLikedId(), ZERO_MATCHES_COUNT) + ONE_MATCHES_SCORE);
             }
         }
 
