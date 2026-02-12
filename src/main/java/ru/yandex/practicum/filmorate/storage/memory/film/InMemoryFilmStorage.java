@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.memory.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
@@ -11,10 +12,8 @@ import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("InMemoryFilmStorage")
@@ -117,22 +116,42 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
-        return new ArrayList<>();
+        return films.values().stream()
+                .filter(film -> film.getUsersLiked().contains(userId) && film.getUsersLiked().contains(friendId))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<FilmLikeDto> getAllFilmsLikes() {
-        return new ArrayList<>();
+        return films.values().stream()
+                .map(film -> (FilmLikeDto) film.getUsersLiked())
+                .toList();
     }
 
     @Override
     public List<Film> returnFilmsListByIDs(List<Long> filmsIds) {
-        return new ArrayList<>();
+        return filmsIds.stream()
+                .map(films::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
-        return new ArrayList<>();
+        List<Film> result = films.values().stream()
+                .filter(film -> film.getDirectors().stream()
+                        .mapToLong(Director::getId)
+                        .anyMatch(directorIdLong -> directorIdLong == id))
+                .collect(Collectors.toList());
+
+        if ("year".equalsIgnoreCase(sortBy)) {
+            result.sort(Comparator.comparing(Film::getReleaseDate));
+        } else if ("likes".equalsIgnoreCase(sortBy)) {
+            result.sort((f1, f2) -> Integer.compare(
+                    f2.getUsersLiked().size(),
+                    f1.getUsersLiked().size()));
+        }
+        return result;
     }
 
     @Override
@@ -153,6 +172,30 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilmsAfterSearching(String query, String by) {
-        return new ArrayList<>();
+        String lowerQuery = query.toLowerCase();
+        Set<Film> matched = new HashSet<>();
+
+        String[] searchBy = by.toLowerCase().split(",");
+        for (String criteria : searchBy) {
+            criteria = criteria.trim();
+            if ("title".equals(criteria)) {
+                films.values().stream()
+                        .filter(f -> f.getName().toLowerCase().contains(lowerQuery))
+                        .forEach(matched::add);
+            } else if ("director".equals(criteria)) {
+                films.values().stream()
+                        .filter(f -> f.getDirectors().stream()
+                                .anyMatch(d -> d.getName().toLowerCase().contains(lowerQuery)))
+                        .forEach(matched::add);
+            } else {
+                throw new IllegalArgumentException("by должен содержать title, director или оба значения через запятую!");
+            }
+        }
+
+        List<Film> result = new ArrayList<>(matched);
+        result.sort((f1, f2) -> Integer.compare(
+                f2.getUsersLiked().size(),
+                f1.getUsersLiked().size()));
+        return result;
     }
 }
