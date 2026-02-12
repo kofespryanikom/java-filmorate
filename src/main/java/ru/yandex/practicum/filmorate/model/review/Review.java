@@ -6,19 +6,19 @@ import lombok.Data;
 
 @Data
 public class Review {
-    Long reviewId;
+    private Long reviewId;
 
     @NotNull(message = "Содержание отзыва должно быть задано")
     @NotBlank(message = "Отзыв не может быть пустым")
-    String content;
+    private String content;
 
     @NotNull
-    Boolean isPositive;
+    private Boolean isPositive;
 
     @NotNull
-    Long userId;
+    private Long userId;
 
     @NotNull
-    Long filmId;
-    Long useful = 0L;
+    private Long filmId;
+    private Long useful = 0L;
 }

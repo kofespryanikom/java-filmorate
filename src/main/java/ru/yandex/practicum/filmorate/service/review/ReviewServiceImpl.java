@@ -2,14 +2,12 @@ package ru.yandex.practicum.filmorate.service.review;
 
 import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.review.Review;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 
@@ -19,12 +17,11 @@ import java.util.List;
 @Validated
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewStorage reviewStorage;
+    private static final long LIKE = 1;
+    private static final long ZERO_ROWS_UPDATED = 0;
 
-    private final UserStorage userStorage;
-
-    public ReviewServiceImpl(ReviewStorage reviewStorage, @Qualifier("UserDbStorage") UserStorage userStorage) {
+    public ReviewServiceImpl(ReviewStorage reviewStorage) {
         this.reviewStorage = reviewStorage;
-        this.userStorage = userStorage;
     }
 
     public Review addLikeToReview(@Positive Long reviewId, @Positive Long userId) {
@@ -32,7 +29,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = reviewStorage.returnReviewById(reviewId);
 
-        review.setUseful(review.getUseful() + 1);
+        review.setUseful(review.getUseful() + LIKE);
 
         reviewStorage.renewUsefulPointsCount(review);
         reviewStorage.addReviewReaction(reviewId, userId, true);
@@ -47,7 +44,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Review review = reviewStorage.returnReviewById(reviewId);
 
-        review.setUseful(review.getUseful() - 1);
+        review.setUseful(review.getUseful() - LIKE);
 
         reviewStorage.renewUsefulPointsCount(review);
         reviewStorage.addReviewReaction(reviewId, userId, false);
@@ -67,11 +64,11 @@ public class ReviewServiceImpl implements ReviewService {
         Integer rowsDeleted = reviewStorage.deleteReviewReaction(reviewId, userId);
         Review review = reviewStorage.returnReviewById(reviewId);
 
-        if (rowsDeleted != 0) {
+        if (rowsDeleted != ZERO_ROWS_UPDATED) {
             if (isReactionPositive) {
-                review.setUseful(review.getUseful() - 1);
+                review.setUseful(review.getUseful() - LIKE);
             } else {
-                review.setUseful(review.getUseful() + 1);
+                review.setUseful(review.getUseful() + LIKE);
             }
 
             reviewStorage.renewUsefulPointsCount(review);
