@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Slf4j
-@Service
+@Service("InMemoryFilmService")
 @Validated
 public class InMemoryFilmService implements FilmService {
 
@@ -71,7 +71,9 @@ public class InMemoryFilmService implements FilmService {
         return film;
     }
 
-    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count) {
+    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count,
+                                                          Integer genreId,
+                                                          Integer year) {
 
         Comparator<Film> userComparator = new Comparator<>() {
             @Override
@@ -121,5 +123,28 @@ public class InMemoryFilmService implements FilmService {
 
     public Rating getRating(@Positive(message = "id должен быть положительным") Integer id) {
         return filmStorage.getRating(id);
+    }
+
+    @Override
+    public void deleteFilm(long id) {
+        if (filmStorage.returnFilmByID(id) == null) {
+            throw new NotFoundException("Фильм с id " + id + " не найден.");
+        }
+        filmStorage.deleteFilm(id);
+    }
+
+    public List<Film> getCommonFilms(@Positive(message = "id должен быть положительным") Long userId,
+                              @Positive(message = "id должен быть положительным") Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
+        return new ArrayList<>();
     }
 }

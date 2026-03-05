@@ -1,19 +1,15 @@
 package ru.yandex.practicum.filmorate.service.film;
 
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -24,109 +20,114 @@ public class FilmServiceImpl implements FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorService directorService;
 
     public FilmServiceImpl(@Qualifier("FilmDbStorage") FilmStorage filmStorage,
-                           @Qualifier("UserDbStorage") UserStorage userStorage) {
+                           @Qualifier("UserDbStorage") UserStorage userStorage, DirectorService directorService) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.directorService = directorService;
     }
 
+    @Override
     public List<Film> returnFilmsList() {
         return filmStorage.returnFilmsList();
     }
 
-    public Film returnFilmByID(@PositiveOrZero(message = "id должен быть положительным") Long id) {
+    @Override
+    public Film returnFilmByID(Long id) {
         return filmStorage.returnFilmByID(id);
     }
 
+    @Override
     public Film addFilm(Film film) {
         return filmStorage.addFilm(film);
     }
 
+    @Override
     public Film renewFilm(Film film) {
         return filmStorage.renewFilm(film);
     }
 
-    public Film addLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                        @PositiveOrZero(message = "id должен быть положительным") Long userId) {
-        if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
+    @Override
+    public Film addLike(Long id, Long userId) {
+        userStorage.returnUserById(userId);
+        filmStorage.returnFilmByID(id);
 
-        Film film = returnFilmByID(id);
-        film.getUsersLiked().add(userId);
-
-        filmStorage.renewFilm(film);
+        filmStorage.addLike(id, userId);
 
         log.info("Добавлен лайк фильму с id {} от пользователя с id {}", id, userId);
-        return film;
+
+        return returnFilmByID(id);
     }
 
-    public Film deleteLike(@PositiveOrZero(message = "id должен быть положительным") Long id,
-                           @PositiveOrZero(message = "id должен быть положительным") Long userId) {
-        if (!userStorage.returnUsersList().contains(userStorage.returnUserById(userId))) {
-            throw new NotFoundException("Такого пользователя не существует");
-        }
+    @Override
+    public Film deleteLike(Long id, Long userId) {
+        userStorage.returnUserById(userId);
+        filmStorage.returnFilmByID(id);
 
-        Film film = returnFilmByID(id);
-        film.getUsersLiked().remove(userId);
-
-        filmStorage.renewFilm(film);
+        filmStorage.deleteLike(id, userId);
 
         log.info("Убран лайк с фильма с id {} от пользователя с id {}", id, userId);
-        return film;
+
+        return returnFilmByID(id);
     }
 
-    public List<Film> returnMostLikedFilmsInAmountOfCount(
-            @PositiveOrZero(message = "count не может быть отрицательным") Long count) {
+    @Override
+    public List<Film> returnMostLikedFilmsInAmountOfCount(Long count, Integer genreId, Integer year)  {
 
-        Comparator<Film> userComparator = new Comparator<>() {
-            @Override
-            public int compare(Film film1, Film film2) {
-                return film1.getUsersLiked().size() - film2.getUsersLiked().size();
-            }
-        };
+        Comparator<Film> userComparator = (film1, film2) -> film1.getUsersLiked().size() - film2.getUsersLiked().size();
 
-        List<Film> sortedFilmList = filmStorage.returnFilmsList().stream()
+        long limit = count == null ? 10 : count;
+
+        return filmStorage.returnFilmsList().stream()
                 .sorted(userComparator.reversed())
+                .filter(film -> genreId == null || film.getGenres().contains(getGenre(genreId)))
+                .filter(film -> year == null || film.getReleaseDate().getYear() == year)
+                .limit(limit)
                 .toList();
-
-        if (count == null) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < 10; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-
-        } else if (sortedFilmList.size() >= count) {
-            List<Film> listToReturn = new ArrayList<>();
-
-            for (int i = 0; i < count; i++) {
-                listToReturn.add(sortedFilmList.get(i));
-            }
-
-            return listToReturn;
-
-        } else {
-            return sortedFilmList;
-        }
     }
 
+    @Override
     public List<Genre> getGenresList() {
         return filmStorage.getGenresList();
     }
 
-    public Genre getGenre(@Positive(message = "id должен быть положительным") Integer id) {
+    @Override
+    public Genre getGenre(Integer id) {
         return filmStorage.getGenre(id);
     }
 
+    @Override
     public List<Rating> getRatingsList() {
         return filmStorage.getRatingsList();
     }
 
-    public Rating getRating(@Positive(message = "id должен быть положительным") Integer id) {
+    public Rating getRating(Integer id) {
         return filmStorage.getRating(id);
+    }
+
+    @Override
+    public void deleteFilm(long id) {
+        filmStorage.deleteFilm(id);
+        log.info("Фильм с id {} успешно удален", id);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        directorService.findById(directorId);
+
+        log.info("Запрошены фильмы режиссера с id {} с сортировкой по {}", directorId, sortBy);
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
+        return filmStorage.getFilmsAfterSearching(query, by);
     }
 }

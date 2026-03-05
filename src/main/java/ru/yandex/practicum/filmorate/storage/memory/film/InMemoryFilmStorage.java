@@ -3,17 +3,17 @@ package ru.yandex.practicum.filmorate.storage.memory.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.film.Director;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
+import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component("InMemoryFilmStorage")
@@ -104,5 +104,98 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     public Rating getRating(Integer id) {
         return new Rating();
+    }
+
+    @Override
+    public void deleteFilm(long id) {
+        if (films.containsKey(id)) {
+            films.remove(id);
+        } else {
+            throw new NotFoundException("Фильм с id " + id + " не найден.");
+        }
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return films.values().stream()
+                .filter(film -> film.getUsersLiked().contains(userId) && film.getUsersLiked().contains(friendId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FilmLikeDto> getAllFilmsLikes() {
+        return films.values().stream()
+                .map(film -> (FilmLikeDto) film.getUsersLiked())
+                .toList();
+    }
+
+    @Override
+    public List<Film> returnFilmsListByIDs(List<Long> filmsIds) {
+        return filmsIds.stream()
+                .map(films::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        List<Film> result = films.values().stream()
+                .filter(film -> film.getDirectors().stream()
+                        .mapToLong(Director::getId)
+                        .anyMatch(directorIdLong -> directorIdLong == id))
+                .collect(Collectors.toList());
+
+        if ("year".equalsIgnoreCase(sortBy)) {
+            result.sort(Comparator.comparing(Film::getReleaseDate));
+        } else if ("likes".equalsIgnoreCase(sortBy)) {
+            result.sort((f1, f2) -> Integer.compare(
+                    f2.getUsersLiked().size(),
+                    f1.getUsersLiked().size()));
+        }
+        return result;
+    }
+
+    @Override
+    public void addLike(Long filmId, Long userId) {
+        Film film = films.get(filmId);
+        if (film != null) {
+            film.getUsersLiked().add(userId);
+        }
+    }
+
+    @Override
+    public void deleteLike(Long filmId, Long userId) {
+        Film film = films.get(filmId);
+        if (film != null) {
+            film.getUsersLiked().remove(userId);
+        }
+    }
+
+    @Override
+    public List<Film> getFilmsAfterSearching(String query, String by) {
+        String lowerQuery = query.toLowerCase();
+        Set<Film> matched = new HashSet<>();
+
+        String[] searchBy = by.toLowerCase().split(",");
+        for (String criteria : searchBy) {
+            criteria = criteria.trim();
+            if ("title".equals(criteria)) {
+                films.values().stream()
+                        .filter(f -> f.getName().toLowerCase().contains(lowerQuery))
+                        .forEach(matched::add);
+            } else if ("director".equals(criteria)) {
+                films.values().stream()
+                        .filter(f -> f.getDirectors().stream()
+                                .anyMatch(d -> d.getName().toLowerCase().contains(lowerQuery)))
+                        .forEach(matched::add);
+            } else {
+                throw new IllegalArgumentException("by должен содержать title, director или оба значения через запятую!");
+            }
+        }
+
+        List<Film> result = new ArrayList<>(matched);
+        result.sort((f1, f2) -> Integer.compare(
+                f2.getUsersLiked().size(),
+                f1.getUsersLiked().size()));
+        return result;
     }
 }

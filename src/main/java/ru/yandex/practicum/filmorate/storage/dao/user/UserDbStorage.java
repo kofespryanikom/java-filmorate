@@ -6,12 +6,17 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerErrorException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.user.EventType;
+import ru.yandex.practicum.filmorate.model.user.Feed;
+import ru.yandex.practicum.filmorate.model.user.Operation;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 import ru.yandex.practicum.filmorate.storage.dao.BaseRepository;
+import ru.yandex.practicum.filmorate.storage.dao.mapper.user.FeedRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.user.FriendRowMapper;
 import ru.yandex.practicum.filmorate.storage.dto.user.UserFriendDto;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,10 +32,16 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String FIND_USER_QUERY = "SELECT * FROM users WHERE user_id = ?";
     private static final String DELETE_USER_FROM_FRIENDS_TABLE = "DELETE FROM friends WHERE user_id = ?";
     private static final String FIND_ALL_USERS_FRIENDS = "SELECT * " +
-                                                         "FROM friends ";
+                                                         "FROM friends";
     private static final String FIND_ALL_USER_FRIENDS = "SELECT * " +
                                                         "FROM friends " +
                                                         "WHERE user_id = ?";
+
+    private static final String ADD_FEED_QUERY = "INSERT INTO feed (timestamp, user_id, event_type, operation, entity_id) " +
+            "VALUES (?, ?, ?, ?, ?)";
+
+    private static final String FIND_FEEDS_QUERY = "SELECT * FROM feed WHERE user_id = ? ORDER BY timestamp ASC";
+    private static final String DELETE_USER_QUERY = "DELETE FROM users WHERE user_id = ?";
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -40,13 +51,13 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         List<User> uniqueUsers = findMany(FIND_ALL_USERS_QUERY);
         List<UserFriendDto> usersFriends = jdbc.query(FIND_ALL_USERS_FRIENDS, new FriendRowMapper());
         Map<Long, User> uniqueUsersMap = uniqueUsers.stream()
-                .collect(Collectors.toMap(user -> user.getId(), user -> user));
+                .collect(Collectors.toMap(User::getId, user -> user));
 
-        User userBeingCompleted;
         for (UserFriendDto userFriendDto : usersFriends) {
             Long userId = userFriendDto.getUserId();
-            userBeingCompleted = uniqueUsersMap.get(userId);
-            userBeingCompleted.getFriendsList().add(userFriendDto.getUserId());
+            Long friendId = userFriendDto.getFriendId();
+            User user = uniqueUsersMap.get(userId);
+            user.getFriendsList().add(friendId);
         }
 
         return new ArrayList<>(uniqueUsersMap.values());
@@ -58,11 +69,12 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         String name = user.getName();
         LocalDate birthdayDate = user.getBirthday();
         if (name == null || name.isBlank()) {
+            user.setName(login);
             name = login;
         }
 
-        Long justAddedUserId = insert(ADD_USER_QUERY, email, login, name, birthdayDate);
-        user.setId(justAddedUserId);
+        Number justAddedUserId = insert(ADD_USER_QUERY, email, login, name, birthdayDate);
+        user.setId(justAddedUserId.longValue());
 
         log.info("Добавлен пользователь: {}", name);
 
@@ -74,7 +86,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                 "(user_id, friend_id) " +
                 "VALUES ";
 
-                Long id = user.getId();
+        Long id = user.getId();
         String email = user.getEmail();
         String login = user.getLogin();
         String name = user.getName();
@@ -82,6 +94,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         List<Long> friendsList = user.getFriendsList();
 
         if (name == null || name.isBlank()) {
+            user.setName(login);
             name = login;
         }
 
@@ -111,12 +124,12 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     public User returnUserById(Long id) {
         Optional<User> user = findOne(FIND_USER_QUERY, id);
-        List<UserFriendDto> friendsList = jdbc.query(FIND_ALL_USER_FRIENDS, new FriendRowMapper(), id);
 
         if (user.isEmpty()) {
-            log.warn("Пользователь с id {} не найден", id);
-            throw new NotFoundException("Пользователь с id " + id + " не найден");
+            throw new NotFoundException("Фильм с id " + id + " не найден");
         }
+
+        List<UserFriendDto> friendsList = jdbc.query(FIND_ALL_USER_FRIENDS, new FriendRowMapper(), id);
 
         User userToBeCompleted = user.get();
 
@@ -143,5 +156,39 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         if (rowsUpdated == 0) {
             throw new InternalServerErrorException("Не удалось обновить данные");
         }
+    }
+
+    public void addFeed(Long userId, EventType eventType, Operation operation, Long entityId) {
+        Feed feed = new Feed();
+
+        long currentTimestamp = Instant.now().toEpochMilli();
+
+        feed.setTimestamp(currentTimestamp);
+        feed.setUserId(userId);
+        feed.setEventType(eventType);
+        feed.setOperation(operation);
+        feed.setEntityId(entityId);
+
+        Long justAddedFeedId = insert(ADD_FEED_QUERY, currentTimestamp, userId, eventType.name(), operation.name(), entityId);
+        feed.setEventId(justAddedFeedId);
+
+    }
+
+    @Override
+    public void deleteUser(long id) {
+        returnUserById(id);
+
+        delete(DELETE_USER_QUERY, id);
+
+        log.info("Пользователь с id {} успешно удален из базы данных", id);
+    }
+
+    public List<Feed> getFeedsByUserId(Long userId) {
+        List<Long> usersIds = returnUsersList().stream().map(User::getId).toList();
+        if (!usersIds.contains(userId)) {
+            throw new NotFoundException("Пользователь с таким id не найден!");
+        }
+
+        return jdbc.query(FIND_FEEDS_QUERY, new FeedRowMapper(), userId);
     }
 }

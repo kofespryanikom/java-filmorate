@@ -1,17 +1,17 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.user.Feed;
 import ru.yandex.practicum.filmorate.model.user.User;
 import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.List;
 import java.util.Set;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
@@ -64,5 +64,20 @@ public class UserController {
     @GetMapping("/{id}/friends/common/{otherId}")
     public List<User> getCommonFriendsByOneUserIdAndOtherId(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getCommonFriendsByOneUserIdAndOtherId(id, otherId);
+    }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable Long userId) {
+        userService.deleteUser(userId);
+    }
+
+    @GetMapping("/{userId}/recommendations")
+    public List<Film> returnRecommendedFilmsList(@PathVariable Long userId) {
+        return userService.returnRecommendedFilmsList(userId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Feed> getFeedsByUserId(@PathVariable Long id) {
+        return userService.getFeedsByUserId(id);
     }
 }

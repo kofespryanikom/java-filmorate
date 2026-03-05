@@ -11,7 +11,10 @@ import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
 import ru.yandex.practicum.filmorate.model.user.User;
+import ru.yandex.practicum.filmorate.service.film.DirectorServiceImpl;
+import ru.yandex.practicum.filmorate.storage.dao.film.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.dao.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.dao.mapper.film.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.film.FilmRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.mapper.user.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.dao.user.UserDbStorage;
@@ -24,9 +27,15 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
-@AutoConfigureTestDatabase
+@Import({FilmDbStorage.class,
+        UserDbStorage.class,
+        DirectorDbStorage.class,
+        FilmRowMapper.class,
+        UserRowMapper.class,
+        DirectorRowMapper.class,
+        DirectorServiceImpl.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Import({FilmDbStorage.class, FilmRowMapper.class, UserDbStorage.class, UserRowMapper.class})
+@AutoConfigureTestDatabase
 public class FilmStorageTests {
 
     private final FilmDbStorage filmStorage;

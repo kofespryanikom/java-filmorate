@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.film.Film;
 import ru.yandex.practicum.filmorate.model.film.Genre;
 import ru.yandex.practicum.filmorate.model.film.Rating;
+import ru.yandex.practicum.filmorate.storage.dto.film.FilmLikeDto;
 
 import java.util.List;
 
@@ -23,4 +24,20 @@ public interface FilmStorage {
     List<Rating> getRatingsList();
 
     Rating getRating(Integer id);
+
+    void deleteFilm(long id);
+
+    List<Film> getCommonFilms(Long userId, Long friendId);
+
+    List<FilmLikeDto> getAllFilmsLikes();
+
+    List<Film> returnFilmsListByIDs(List<Long> filmsIds);
+
+    List<Film> getFilmsByDirector(Integer directorId, String sortBy);
+
+    void deleteLike(Long id, Long userId);
+
+    void addLike(Long id, Long userId);
+
+    List<Film> getFilmsAfterSearching(String query, String by);
 }

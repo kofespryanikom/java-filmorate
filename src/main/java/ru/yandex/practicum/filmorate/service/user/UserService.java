@@ -1,6 +1,9 @@
 package ru.yandex.practicum.filmorate.service.user;
 
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+import ru.yandex.practicum.filmorate.model.film.Film;
+import ru.yandex.practicum.filmorate.model.user.Feed;
 import ru.yandex.practicum.filmorate.model.user.User;
 
 import java.util.List;
@@ -10,7 +13,7 @@ public interface UserService {
 
     List<User> returnUsersList();
 
-    User returnUserById(@PositiveOrZero(message = "id должен быть положительным") Long id);
+    User returnUserById(Long id);
 
     User addUser(User user);
 
@@ -29,4 +32,10 @@ public interface UserService {
                                                      Long id,
                                                      @PositiveOrZero(message = "id должен быть положительным")
                                                      Long otherId);
+
+    List<Feed> getFeedsByUserId(@PositiveOrZero(message = "id должен быть положительным") Long id);
+
+    void deleteUser(long id);
+
+    List<Film> returnRecommendedFilmsList(@Positive Long userId);
 }

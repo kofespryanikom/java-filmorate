@@ -14,13 +14,14 @@ import ru.yandex.practicum.filmorate.serializer.DurationToMinutesSerializer;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Data
 public class Film {
     private Long id;
 
-    @NotNull(message = "Название фильма должно быть задано")
+    @NotNull(message = "Название фильма не может быть null")
     @NotBlank(message = "Название фильма должно быть задано")
     private String name;
 
@@ -34,7 +35,10 @@ public class Film {
     @JsonSerialize(using = DurationToMinutesSerializer.class)
     @DurationConstraint
     private Duration duration;
+
     private Set<Long> usersLiked = new HashSet<>();
-    private Set<Genre> genres = new HashSet<>();
+    private Set<Genre> genres = new LinkedHashSet<>();
     private Rating mpa;
+
+    private Set<Director> directors = new LinkedHashSet<>();
 }
